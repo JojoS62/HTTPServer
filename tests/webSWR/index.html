@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<title>WebSocket Echo Client</title>
+<style>
+    body {
+      background-color:black;
+    }
+    section {
+      text-align: center;
+    }
+    canvas {
+      padding: 1em;
+      margin: 0em;
+    }
+
+    #lowswr, #swr, #highswr {
+     float: left;
+     width: 33%;
+     box-sizing: border-box;
+    }
+
+    #highswr {
+         margin-right: 0;
+    }
+
+    #lowswr {
+        text-align: right;
+    }
+    #swr {
+        text-align: center
+    }
+    #highswr {
+        text-align: left
+    }
+
+</style>
+<link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+<body>
+        <div id="lowswr" style="font-family: 'Orbitron', sans-serif; font-size:100px; color: darkslategrey;">1,4</div>
+        <div id="swr" style="font-family: 'Orbitron', sans-serif; font-size:100px; color: greenyellow;">1,4</div>
+        <div id="highswr" style="font-family: 'Orbitron', sans-serif; font-size:100px; color: darkslategray;">1,4</div>
+<section class="main">
+    <canvas id="demo" width="100" height="400" data-val="0">No canvas</canvas>
+    <canvas id="demo2" width="100" height="400" data-val="0">No canvas</canvas>
+    <canvas id="demo3" width="100" height="400" data-val="0">No canvas</canvas>
+    <canvas id="demo4" width="100" height="400" data-val="0">No canvas</canvas>
+</section>
+          
+<script src="bar.js"></script>    
+<script>
+    var demo = document.getElementById('demo');
+    var demo2 = document.getElementById('demo2');
+    var demo3 = document.getElementById('demo3');
+    var demo4 = document.getElementById('demo4');
+    var swr = document.getElementById('swr');
+    var ws = new WebSocket("ws://boracay.homeip.net:8080/ws/");
+    
+    var lswr = document.getElementById('lowswr');
+    var hswr = document.getElementById('highswr');
+    
+    var lowswr = 0;
+    var highswr = 0;
+
+    window.onload = function(){
+        vumeter(demo, {
+          "boxCount": 15,
+          "boxGapFraction": 0.25,
+          "max": 100,
+        });
+        vumeter(demo2, {
+          "boxCount": 15,
+          "boxGapFraction": 0.25,
+          "max": 100,
+        });
+        vumeter(demo3, {
+          "boxCount": 15,
+          "boxGapFraction": 0.25,
+          "max": 100,
+        });
+        vumeter(demo4, {
+          "boxCount": 15,
+          "boxGapFraction": 0.25,
+          "max": 100,
+        });
+      };
+
+    // Initialize WebSocket connection and event handlers
+    function setup() {  
+        
+        // Listen for the connection open event then call the sendMessage function          
+        ws.onopen = function (e) {      
+            console.log("Connected");      
+            sendMessage("Hello WebSocket!")  
+        }
+
+        // Listen for the close connection event
+        ws.onclose = function (e) {      
+            console.log("Disconnected: " + e.reason);  
+        }
+
+        // Listen for connection errors
+        ws.onerror = function (e) {      
+            console.log("Error ");  
+        }
+
+        // Listen for new messages arriving at the client
+        ws.onmessage = function (e) {      
+            //console.log(e.data);
+            var request = (e.data).split(",");
+
+            demo.setAttribute('data-val', request[0]);
+            demo2.setAttribute('data-val', request[1]);
+            demo3.setAttribute('data-val', request[2]);
+            demo4.setAttribute('data-val', request[3]);
+
+            var currentValue = (1+(request[0]/100)*3).toFixed(2);
+
+            if(lowswr == 0 || currentValue < lowswr)
+            {
+                lowswr = currentValue;
+                lswr.innerHTML = lowswr;
+            }
+            if(highswr == 0 || currentValue > highswr)
+            {
+                highswr = currentValue;
+                hswr.innerHTML = highswr;
+            }
+            swr.innerHTML = currentValue;
+            // Close the socket once one message has arrived.      
+            //ws.close();  
+        }
+
+    }
+
+    function clearLowHightSWR()
+    {
+        lowswr = 0;
+        highswr = 0;
+    }
+
+    // Send a message on the WebSocket.
+    function sendMessage(msg) {  
+        ws.send(msg);      
+        //console.log("Message sent");  
+    }
+
+    // Start running the example.
+    setup();
+    //setInterval(function(){ sendMessage(".") }, 80);
+    setInterval(function(){ clearLowHightSWR() }, 10000);
+</script>
+</body>
