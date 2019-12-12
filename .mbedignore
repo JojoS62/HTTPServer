@@ -1,5 +1,3 @@
-Debug/*
-Release/*
-Develop/*
-test_JS/*
+BUILD/*
+tests/*
 
