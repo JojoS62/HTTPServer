@@ -21,11 +21,12 @@
  */
 
 #include "WebsocketHandlers.h"
+#include "ClientConnection.h"
 /*
     Websocket Test
 */
 
-void WSHandler::onMessage(char* text)
+void WSHandler::onMessage(const char* text)
 {
     //printf("TEXT: [%s]\r\n", text);
 
@@ -33,15 +34,23 @@ void WSHandler::onMessage(char* text)
     mbed_stats_heap_get( &heap_info );
     int wsCount = _clientConnection->getServer()->getWebsocketCount();    
 
-    const char msg[] = "{\"allocated\": %lu, \"allocations\": %lu, \"ws_count\": %i, \"client_connection\": %x }";
-    int n = snprintf(_buffer, sizeof(_buffer), msg, heap_info.current_size, heap_info.alloc_cnt, wsCount, (uint)_clientConnection);
+    //const char msg[] = "{\"allocated\": %lu, \"allocations\": %lu, \"ws_count\": %i, \"client_connection\": %x }";
+    //int n = snprintf(_buffer, sizeof(_buffer), msg, heap_info.current_size, heap_info.alloc_cnt, wsCount, (uint)_clientConnection);
+
+    const char msg[] = "%f,%f,%f,%f\n";
+    float f1, f2, f3, f4;
+    f1 = rand() * 100.0f / RAND_MAX;
+    f2 = rand() * 100.0f / RAND_MAX;
+    f3 = rand() * 100.0f / RAND_MAX;
+    f4 = rand() * 100.0f / RAND_MAX;
+    int n = snprintf(_buffer, sizeof(_buffer), msg, f1, f2, f3, f4);
 
     
     if (_clientConnection)
         _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
 }
 
-void WSHandler::onMessage(char* data, size_t size)
+void WSHandler::onMessage(const char* data, size_t size)
 {
     //int8_t lv = data[0];
     //int8_t rv = data[1];
@@ -52,10 +61,15 @@ void WSHandler::onMessage(char* data, size_t size)
 void WSHandler::onOpen(ClientConnection *clientConnection)
 {
     WebSocketHandler::onOpen(clientConnection);
-
+    clientConnection->setWSTimer(50);
     printf("websocket opened\r\n");
 }
  
+void WSHandler::onTimer()
+{
+    onMessage("");
+}
+
 void WSHandler::onClose()
 {
     printf("websocket closed\r\n");
