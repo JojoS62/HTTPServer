@@ -1,4 +1,4 @@
-function vumeter(elem, config){
+function bar(elem, config){
 
     // Settings
     var max             = 100;
