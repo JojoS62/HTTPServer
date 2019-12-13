@@ -61,7 +61,7 @@ void WSHandler::onMessage(const char* data, size_t size)
 void WSHandler::onOpen(ClientConnection *clientConnection)
 {
     WebSocketHandler::onOpen(clientConnection);
-    clientConnection->setWSTimer(50);
+    clientConnection->setWSTimer(10);
     printf("websocket opened\r\n");
 }
  

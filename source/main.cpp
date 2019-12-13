@@ -81,10 +81,23 @@ Thread msgSender(osPriorityNormal, DEFAULT_STACK_SIZE * 3);
 
 Mutex mutexReqHandlerRoot;
 
+
+// Callback function, grab the next chunk and return it
+const void * get_chunk(uint32_t* out_size) {
+    // If you don't have any data left, set out_size to 0 and return a null pointer
+    {
+        *out_size = 0;
+        return NULL;
+    }
+//    *out_size = strlen(chunk);
+
+    return nullptr; // chunk;
+}
+
 // Requests come in here
-void request_handler(ParsedHttpRequest* request, TCPSocket* socket) {
+void request_handler(HttpResponse* request, TCPSocket* socket) {
     mutexReqHandlerRoot.lock();
-#if 0
+#if 1
     printf("[Http]Request came in: %s %s\n", http_method_str(request->get_method()), request->get_url().c_str());
     
 	vector<string*>  headerFields = request->get_headers_fields();
@@ -104,6 +117,7 @@ void request_handler(ParsedHttpRequest* request, TCPSocket* socket) {
         HttpResponseBuilder builder(200);
         builder.set_header("Content-Type", "text/html; charset=utf-8");
 
+#if 0
         char response[] = "<html><head><title>Hello from mbed</title></head>"
             "<body>"
                 "<h1>mbed webserver</h1>"
@@ -114,6 +128,8 @@ void request_handler(ParsedHttpRequest* request, TCPSocket* socket) {
             "</body></html>";
 
         builder.send(socket, response, sizeof(response) - 1);
+#endif
+        //request->send(&get_chunk)
     }
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
 //        printf("toggle LED called\n\n");
@@ -132,7 +148,7 @@ void request_handler(ParsedHttpRequest* request, TCPSocket* socket) {
 char buffer[1024];
 Mutex mutexReqHandlerStatus;
 
-void request_handler_getStatus(ParsedHttpRequest* request, TCPSocket* socket) {
+void request_handler_getStatus(HttpResponse* request, TCPSocket* socket) {
     mutexReqHandlerStatus.lock();
     if (request->get_method() == HTTP_GET) {
         mbed_stats_heap_t heap_info;
