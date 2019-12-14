@@ -4,9 +4,7 @@
             "forcedInclude": [
                 "${workspaceFolder}/mbed_config.h"
             ],
-            "intelliSenseMode": "gcc-x86",
             "name": "Windows",
-            "compilerPath": "c:/Program Files (x86)/GNU Tools ARM Embedded/8 2019-q3-update/bin/arm-none-eabi-g++.exe", 
             "includePath": [
                 "../../components/COMPONENT_SDIO/*",
                 "../../components/COMPONENT_SDIO/TARGET_STM/TARGET_STM32F4/*",
@@ -365,8 +363,7 @@
                 "../../mbed-os/targets/TARGET_STM/TARGET_STM32F4/*",
                 "../../mbed-os/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F407xE/*",
                 "../../mbed-os/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F407xE/device/*",
-                "../../mbed-os/targets/TARGET_STM/TARGET_STM32F4/device/*",
-                "d:/Projects/Sn/LocalGit/test/Mbed5-Projects/mbed-os/*"
+                "../../mbed-os/targets/TARGET_STM/TARGET_STM32F4/device/*"
             ],
             "defines": [
                 "DEVICE_EMAC=1",
