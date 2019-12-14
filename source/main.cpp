@@ -1,9 +1,10 @@
 #include "mbed.h"
 #include "rtos.h"
 
-#include "http_server.h"
-#include "http_response_builder.h"
 #include "network-helper.h"
+#include "HttpServer.h"
+#include "HttpResponseBuilder.h"
+#include "HttpParsedRequest.h"
 #include "WebsocketHandlers.h"
 
 #include "threadIO.h"
@@ -95,20 +96,21 @@ const void * get_chunk(uint32_t* out_size) {
 }
 
 // Requests come in here
-void request_handler(HttpResponse* request, TCPSocket* socket) {
+void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
     mutexReqHandlerRoot.lock();
 #if 1
     printf("[Http]Request came in: %s %s\n", http_method_str(request->get_method()), request->get_url().c_str());
     
-	vector<string*>  headerFields = request->get_headers_fields();
-	vector<string*>  headerValues = request->get_headers_values();
-    
-    for (uint i=0; i < headerFields.size(); i++) {
-        printf("[%d]", i);
-        printf((headerFields[i])->c_str());
+    MapHeaderIterator it;
+    int i = 0;
+
+    for (it = request->headers.begin(); it != request->headers.end(); it++) {
+        printf("[%d] ", i);
+        printf(it->first.c_str());
         printf(" : ");
-        printf((headerValues[i])->c_str());
+        printf(it->second.c_str());
         printf("\n");
+        i++;
     }
     fflush(stdout);
 #endif
@@ -117,7 +119,6 @@ void request_handler(HttpResponse* request, TCPSocket* socket) {
         HttpResponseBuilder builder(200);
         builder.set_header("Content-Type", "text/html; charset=utf-8");
 
-#if 0
         char response[] = "<html><head><title>Hello from mbed</title></head>"
             "<body>"
                 "<h1>mbed webserver</h1>"
@@ -128,11 +129,9 @@ void request_handler(HttpResponse* request, TCPSocket* socket) {
             "</body></html>";
 
         builder.send(socket, response, sizeof(response) - 1);
-#endif
-        //request->send(&get_chunk)
     }
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
-//        printf("toggle LED called\n\n");
+        printf("toggle LED called\n\n");
         led = !led;
 
         HttpResponseBuilder builder(200);
@@ -148,7 +147,7 @@ void request_handler(HttpResponse* request, TCPSocket* socket) {
 char buffer[1024];
 Mutex mutexReqHandlerStatus;
 
-void request_handler_getStatus(HttpResponse* request, TCPSocket* socket) {
+void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
     mutexReqHandlerStatus.lock();
     if (request->get_method() == HTTP_GET) {
         mbed_stats_heap_t heap_info;

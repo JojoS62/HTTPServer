@@ -24,7 +24,7 @@
 #define __WebsocketHandler_h__
 
 #include "mbed.h"
-#include "http_server.h"
+#include "HttpServer.h"
 #include "WebSocketHandler.h"
 
 class WSHandler: public WebSocketHandler
