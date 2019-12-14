@@ -2,11 +2,10 @@
     "configurations": [
         {
             "forcedInclude": [
-                "${workspaceFolder}/mbed_config.h"
+                "${workspaceFolder}/BUILD/STM32F407VE_BLACK/GCC_ARM-DEBUG/mbed_config.h"
             ],
             "name": "Windows",
             "includePath": [
-                "${workspaceFolder}/BUILD/STM32F407VE_BLACK/GCC_ARM-DEBUG/mbed_config.h",
                 "${workspaceFolder}/../../components/COMPONENT_SDIO/*",
                 "${workspaceFolder}/../../components/COMPONENT_SDIO/TARGET_STM/TARGET_STM32F4/*",
                 "${workspaceFolder}/../../components/COMPONENT_SDIO/util/*",
