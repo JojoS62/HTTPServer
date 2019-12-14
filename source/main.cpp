@@ -1,5 +1,4 @@
 #include "mbed.h"
-#include "rtos.h"
 
 #include "network-helper.h"
 #include "HttpServer.h"
