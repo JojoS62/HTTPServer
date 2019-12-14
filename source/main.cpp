@@ -230,7 +230,12 @@ int main() {
         printf("Cannot connect to the network, see serial output\n");
         return 1;
     } 
-	
+    nsapi_error_t connect_status = network->connect();
+
+    if (connect_status != NSAPI_ERROR_OK) {
+        printf("Failed to connect to network (%d)\n", connect_status);
+        return NULL;
+    } 	
     //Thread *thread = new Thread(osPriorityNormal1, 2048);
     //thread->start(print_stats);
 
