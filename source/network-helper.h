@@ -20,14 +20,19 @@ NetworkInterface *connect_to_default_network_interface() {
     }
 
     nsapi_error_t connect_status = network->connect();
-
+    
     if (connect_status != NSAPI_ERROR_OK) {
         printf("[NWKH] Failed to connect to network (%d)\n", connect_status);
         return NULL;
     }
 
+    SocketAddress socketAddress;
+    nsapi_error_t err = network->get_ip_address(&socketAddress);
+
     printf("[NWKH] Connected to the network\n");
-    printf("[NWKH] IP address: %s\n", network->get_ip_address());
+    if (err == NSAPI_ERROR_OK) {
+        printf("[NWKH] IP address: %s\n", socketAddress.get_ip_address());
+    }
     return network;
 }
 
