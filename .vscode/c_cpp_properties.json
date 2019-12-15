@@ -2,7 +2,7 @@
     "configurations": [
         {
             "forcedInclude": [
-                "${workspaceFolder}/BUILD/STM32F407VE_BLACK/GCC_ARM-DEBUG/mbed_config.h"
+                "../../BUILD/${workspaceFolderBasename}/DEBUG/mbed_config.h"
             ],
             "name": "Windows",
             "includePath": [
