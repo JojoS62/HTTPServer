@@ -32,7 +32,7 @@ void WSHandler::onMessage(const char* text)
 
     mbed_stats_heap_t heap_info;
     mbed_stats_heap_get( &heap_info );
-    int wsCount = _clientConnection->getServer()->getWebsocketCount();    
+    //int wsCount = _clientConnection->getServer()->getWebsocketCount();    
 
     //const char msg[] = "{\"allocated\": %lu, \"allocations\": %lu, \"ws_count\": %i, \"client_connection\": %x }";
     //int n = snprintf(_buffer, sizeof(_buffer), msg, heap_info.current_size, heap_info.alloc_cnt, wsCount, (uint)_clientConnection);
