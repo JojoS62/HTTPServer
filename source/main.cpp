@@ -13,7 +13,7 @@
 #include "FATFileSystem.h"
 
 SDIOBlockDevice bd;
-FATFileSystem fs("sda", &bd);
+FATFileSystem fs;
 
 #define SAMPLE_TIME     1000 // milli-sec
 #define COMPLETED_FLAG (1UL << 0)
@@ -129,6 +129,11 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
 
         builder.send(socket, response, sizeof(response) - 1);
     }
+    else if(request->get_method() == HTTP_GET) {
+        HttpResponseBuilder builder(200);
+
+        builder.sendFile(socket, &fs, request->get_url());
+    }
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
         printf("toggle LED called\n\n");
         led = !led;
@@ -217,9 +222,33 @@ class CallbackTest
 };
 #endif
 
+void print_dir() {
+    Dir dir;
+    struct dirent ent;
+
+    dir.open(&fs, "/htmlRoot");
+    //dir.readdir();
+    // Check the filenames in directory
+    while (1) {
+        size_t res = dir.read(&ent);
+        if (0 == res) {
+            break;
+        }
+        printf(ent.d_name);
+        printf("\n");
+    }
+    int res = dir.close();
+}
+
 
 int main() {
-	
+    {
+        int res = bd.init();
+        res = fs.mount(&bd);
+
+        print_dir();
+    }
+
     // IO Thread
     //threadIO.start();
     
