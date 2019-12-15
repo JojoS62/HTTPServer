@@ -236,6 +236,8 @@ int main() {
         printf("Failed to connect to network (%d)\n", connect_status);
         return NULL;
     } 	
+
+    // show threadstatistics
     //Thread *thread = new Thread(osPriorityNormal1, 2048);
     //thread->start(print_stats);
 
