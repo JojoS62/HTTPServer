@@ -234,7 +234,7 @@ int main() {
 
     if (connect_status != NSAPI_ERROR_OK) {
         printf("Failed to connect to network (%d)\n", connect_status);
-        return NULL;
+        return 2;
     } 	
 
     // show threadstatistics
