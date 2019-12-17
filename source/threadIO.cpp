@@ -24,9 +24,10 @@
 #include "Adafruit_ADS1015.h"
 #include "MCP23017.h"
 #include "TextLCD.h"
+#include "globalVars.h"
 
 
-#define STACKSIZE   (4 * 1024)
+#define STACKSIZE   (2 * 1024)
 #define THREADNAME  "ThreadIO"
 
 ThreadIO::ThreadIO(uint32_t cycleTime_ms) :
@@ -52,8 +53,8 @@ void ThreadIO::myThreadFn()
 {
     // thread local objects
     // take care of thread stacksize !
-    // DigitalOut led1(LED1);
-    I2C i2c(PC_9,PA_8);
+    DigitalOut led1(LED1);
+    I2C i2c(I2C_SDA, I2C_SCL);
     Adafruit_ADS1115 ads(&i2c);
 
 
@@ -71,22 +72,17 @@ void ThreadIO::myThreadFn()
     }
 #endif     
 
-    int i = 0;
     bool testpin = false;
 
     while(_running) {
         uint64_t nextTime = get_ms_count() + _cycleTime;
 
-        //MCP23017.digitalWrite(3, testpin ? 0 : 1);
-
         testpin = !testpin;
 
-
-        // led1 = !led1;
-        float reading = ads.readADC_SingleEnded_V(0); // read channel 0
-        float reading1 = ads.readADC_SingleEnded_V(1); // read channel 0
-        float reading2 = ads.readADC_SingleEnded_V(2); // read channel 0
-        float reading3 = ads.readADC_SingleEnded_V(3); // read channel 0
+        led1 = !led1;
+        for (uint i = 0; i < sizeof(globalVars.adcValues)/sizeof(globalVars.adcValues[0]); i++) {
+            globalVars.adcValues[i] = ads.readADC_SingleEnded_V(i); // read channel 0
+        }
         
         //printf("reading: %7.3f %7.3f %7.3f %7.3f\r\n", reading, reading1, reading2, reading3); // print reading
 
