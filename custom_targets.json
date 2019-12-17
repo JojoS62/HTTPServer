@@ -31,7 +31,7 @@
 			"SDIO",
             "USBDEVICE"
         ],
-        "components_add": ["SDIO"],
+        "components_add": ["SDIO", "SPIF"],
         "release_versions": ["2", "5"],
         "device_name": "STM32F407VE"
     }

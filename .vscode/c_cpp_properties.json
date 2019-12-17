@@ -2,10 +2,11 @@
     "configurations": [
         {
             "forcedInclude": [
-                "../../BUILD/${workspaceFolderBasename}/DEBUG/mbed_config.h"
+                "${workspaceFolder}/../../BUILD/${workspaceFolderBasename}/DEBUG/*"
             ],
             "name": "Windows",
             "includePath": [
+                "${workspaceFolder}/../../BUILD/${workspaceFolderBasename}/DEBUG/*",
                 "${workspaceFolder}/../../components/COMPONENT_SDIO/*",
                 "${workspaceFolder}/../../components/COMPONENT_SDIO/TARGET_STM/TARGET_STM32F4/*",
                 "${workspaceFolder}/../../components/COMPONENT_SDIO/util/*",
