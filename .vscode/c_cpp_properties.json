@@ -32,6 +32,7 @@
                 "${workspaceFolder}/../../libs/TARGET_STM32F407VE_BLACK/Adafruit_TFTLCD_16bit_STM32/*",
                 "${workspaceFolder}/../../libs/TARGET_STM32F407VE_BLACK/Adafruit_TFTLCD_16bit_STM32/src/*",
                 "${workspaceFolder}/../../libs/TextLCD/*",
+                "${workspaceFolder}/../../libs/TFTPServer/*",
                 "${workspaceFolder}/../../libs/WebSocketClient/*",
                 "${workspaceFolder}/../../libs/lvgl/*",
                 "${workspaceFolder}/../../libs/lvgl/lv_drivers/*",
