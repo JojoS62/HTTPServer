@@ -10,7 +10,12 @@
 #include "MQTTThreadedClient.h"
 
 #include "SDIOBlockDevice.h"
+#include "SPIFBlockDevice.h"
 #include "FATFileSystem.h"
+#include "LittleFileSystem.h"
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 #define USE_HTTPSERVER
 #define USE_TFTPSERVER
@@ -19,7 +24,10 @@
 #define DEFAULT_STACK_SIZE (4096)
 
 SDIOBlockDevice bd;
-FATFileSystem fs("sda");
+FATFileSystem fs("sda", &bd);
+
+SPIFBlockDevice spif(PB_5, PB_4, PB_3, PB_0);
+LittleFileSystem lfs("sdb", &spif);
 
 #ifdef USE_TFTPSERVER
 #include "threadTFTPServer.h"
@@ -128,7 +136,7 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
         char response[] = "<html><head><title>Hello from mbed</title></head>"
             "<body>"
                 "<h1>mbed webserver</h1>"
-                "<button id=\"toggle\">Toggle LED</button>"
+                "<button id=\"toggle\">Format Flash with LittleFS</button>"
                 "<script>document.querySelector('#toggle').onclick = function() {"
                     "var x = new XMLHttpRequest(); x.open('POST', '/toggle'); x.send();"
                 "}</script>"
@@ -144,6 +152,23 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
         printf("toggle LED called\n\n");
         //led = !led;
+        spif.init();
+        printf("spif size: %llu\n",         spif.size());
+        printf("spif read size: %llu\n",    spif.get_read_size());
+        printf("spif program size: %llu\n", spif.get_program_size());
+        printf("spif erase size: %llu\n",   spif.get_erase_size());
+        // Write "Hello World!" to the first block
+        char *buffer = (char*)malloc(spif.get_erase_size());
+        sprintf(buffer, "Hello World!\n");
+        spif.erase(0, spif.get_erase_size());
+        spif.program(buffer, 0, spif.get_erase_size());
+        // Read back what was stored
+        spif.read(buffer, 0, spif.get_erase_size());
+        printf("%s", buffer);
+        // Deinitialize the device
+        spif.deinit();
+        
+        lfs.format(&spif);
 
         HttpResponseBuilder builder(200);
         builder.send(socket, NULL, 0);
@@ -251,19 +276,10 @@ void print_dir() {
 
 
 int main() {
-    {
-        int rc = bd.init();
-        if (rc != 0) {
-            printf("Error: init blockdevice SDcard failed: %d\n", rc);
-        } else {
-            rc = fs.mount(&bd);
-            if (rc != 0) {
-                printf("Error: mount FATFilesystem for SDcard failed: %d\n", rc);
-            }
-        }
-        
-        print_dir();
-    }
+    printf("Hello from "  TOSTRING(TARGET_NAME) "\n");
+    printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
+
+    print_dir();
 
     // IO Thread
     threadIO.start();
