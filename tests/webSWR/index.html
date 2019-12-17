@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html>
 <head>
 <title>WebSocket SWR Client</title>
 <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
@@ -18,6 +19,7 @@
 <meta name="msapplication-TileColor" content="#ffffff">
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 <meta name="theme-color" content="#ffffff">
+<link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
 <style>
     body {
       background-color:black;
@@ -52,7 +54,6 @@
 
 </style>
 </head>
-<link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
 <body>
         <div id="lowswr" style="font-family: 'Orbitron', sans-serif; font-size:100px; color: darkslategrey;">0,0</div>
         <div id="swr" style="font-family: 'Orbitron', sans-serif; font-size:100px; color: greenyellow;">0,0</div>
@@ -83,7 +84,10 @@
 	  var minMaxThresholdTime = 10000;
 	  var sendAliveMsgTime = 10000;
 	  var measureMsgsTime = 3000;
-	  var ws_Url = "ws://boracay.homeip.net:8080/ws/";
+
+    var ip = location.host;
+	  var ws_Url = "ws://" + ip + "/ws/";
+	  //var ws_Url = "ws://boracay.homeip.net:8080/ws/";
 	  //var ws_Url = "ws://192.168.100.80:8080/ws/";
 	
     var lswr = document.getElementById('lowswr');
@@ -240,3 +244,4 @@
 
 </script>
 </body>
+</html>
