@@ -22,9 +22,8 @@
 
 #include "WebsocketHandlers.h"
 #include "ClientConnection.h"
-/*
-    Websocket Test
-*/
+
+#include "globalVars.h"
 
 void WSHandler::onMessage(const char* text)
 {
@@ -38,12 +37,17 @@ void WSHandler::onMessage(const char* text)
     //int n = snprintf(_buffer, sizeof(_buffer), msg, heap_info.current_size, heap_info.alloc_cnt, wsCount, (uint)_clientConnection);
 
     const char msg[] = "%f,%f,%f,%f\n";
+#if 0
     float f1, f2, f3, f4;
     f1 = rand() * 100.0f / RAND_MAX;
     f2 = rand() * 100.0f / RAND_MAX;
     f3 = rand() * 100.0f / RAND_MAX;
-    f4 = rand() * 100.0f / RAND_MAX;
-    int n = snprintf(_buffer, sizeof(_buffer), msg, f1, f2, f3, f4);
+    f4 = rand() * 100.0f / RAND_MAX
+#endif
+    int n = snprintf(_buffer, sizeof(_buffer), msg, globalVars.adcValues[0], 
+                                                    globalVars.adcValues[1], 
+                                                    globalVars.adcValues[2], 
+                                                    globalVars.adcValues[3]);
 
     
     if (_clientConnection)
