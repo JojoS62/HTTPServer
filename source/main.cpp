@@ -12,8 +12,19 @@
 #include "SDIOBlockDevice.h"
 #include "FATFileSystem.h"
 
+#define USE_HTTPSERVER
+#define USE_TFTPSERVER
+//#define USE_MQTT
+
+#define DEFAULT_STACK_SIZE (4096)
+
 SDIOBlockDevice bd;
-FATFileSystem fs;
+FATFileSystem fs("sda");
+
+#ifdef USE_TFTPSERVER
+#include "threadTFTPServer.h"
+ThreadTFTPServer  threadTFTPpServer;
+#endif
 
 #define SAMPLE_TIME     1000 // milli-sec
 #define COMPLETED_FLAG (1UL << 0)
@@ -69,14 +80,10 @@ void print_stats()
     // Now allow the stats thread to simply exit by itself gracefully.
 }
 
-#define USE_HTTPSERVER
-//#define USE_MQTT
 
-#define DEFAULT_STACK_SIZE (4096)
+//DigitalOut led(LED1);
 
-DigitalOut led(LED1);
-
-//ThreadIO threadIO(1000);
+ThreadIO threadIO(100);
 Thread msgSender(osPriorityNormal, DEFAULT_STACK_SIZE * 3);
 
 Mutex mutexReqHandlerRoot;
@@ -136,7 +143,7 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
     }
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
         printf("toggle LED called\n\n");
-        led = !led;
+        //led = !led;
 
         HttpResponseBuilder builder(200);
         builder.send(socket, NULL, 0);
@@ -164,11 +171,13 @@ void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
             "<body>"
                 "<h1>mbed webserver</h1>"
                 "<h2>memory status</h2>"
-                "<h2>Bytes allocated currently: %d</h2>"
-                "<h2>Current number of allocations: %d</h2>"
+                "Bytes allocated currently: %d"
+                "Bytes allocated max: %d"
+                "Current number of allocations: %d"
+                "reserved size: %d"
             "</body></html>";
 
-        int n = snprintf(buffer, sizeof(buffer), response, heap_info.current_size, heap_info.alloc_cnt);
+        int n = snprintf(buffer, sizeof(buffer), response, heap_info.current_size, heap_info.max_size, heap_info.alloc_cnt, heap_info.reserved_size);
 
         builder.send(socket, buffer, n-1);
     }
@@ -237,20 +246,27 @@ void print_dir() {
         printf(ent.d_name);
         printf("\n");
     }
-    int res = dir.close();
+    dir.close();
 }
 
 
 int main() {
     {
-        int res = bd.init();
-        res = fs.mount(&bd);
-
+        int rc = bd.init();
+        if (rc != 0) {
+            printf("Error: init blockdevice SDcard failed: %d\n", rc);
+        } else {
+            rc = fs.mount(&bd);
+            if (rc != 0) {
+                printf("Error: mount FATFilesystem for SDcard failed: %d\n", rc);
+            }
+        }
+        
         print_dir();
     }
 
     // IO Thread
-    //threadIO.start();
+    threadIO.start();
     
     // Connect to the network with the default networking interface
     // if you use WiFi: see mbed_app.json for the credentials
@@ -271,7 +287,7 @@ int main() {
     //thread->start(print_stats);
 
 #ifdef USE_HTTPSERVER	
-    HttpServer server(network, 5, 4);
+    HttpServer server(network, 5, 4);               // max 5 threads, 4 websockets
     server.setHTTPHandler("/", &request_handler);
     server.setHTTPHandler("/stats/", &request_handler_getStatus);
     
@@ -289,9 +305,8 @@ int main() {
     }
 #endif
 
-#ifdef USE_WEBSOCKETSERVER
-    ThreadWebSocketServer   threadWebSocketServer(network, 8081);
-    threadWebSocketServer.start();
+#ifdef USE_TFTPSERVER
+    threadTFTPpServer.start(network);
 #endif
 
 #ifdef USE_MQTT
