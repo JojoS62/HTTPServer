@@ -186,25 +186,43 @@ Mutex mutexReqHandlerStatus;
 void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
     mutexReqHandlerStatus.lock();
     if (request->get_method() == HTTP_GET) {
-        mbed_stats_heap_t heap_info;
-        mbed_stats_heap_get( &heap_info );
+        if (request->get_filename() == "mem") {
+            mbed_stats_heap_t heap_info;
+            mbed_stats_heap_get( &heap_info );
 
-        HttpResponseBuilder builder(200);
-        builder.set_header("Content-Type", "text/html; charset=utf-8");
+            HttpResponseBuilder builder(200);
+            builder.set_header("Content-Type", "text/html; charset=utf-8");
 
-        char response[] = "<html><head><title>Hello from mbed</title></head>"
-            "<body>"
-                "<h1>mbed webserver</h1>"
-                "<h2>memory status</h2>"
-                "Bytes allocated currently: %d"
-                "Bytes allocated max: %d"
-                "Current number of allocations: %d"
-                "reserved size: %d"
-            "</body></html>";
+            string response;
+            response.reserve(512);
 
-        int n = snprintf(buffer, sizeof(buffer), response, heap_info.current_size, heap_info.max_size, heap_info.alloc_cnt, heap_info.reserved_size);
+            response += "{\"current_size\": ";
+            response += to_string(heap_info.current_size);
+            response += ", \"max_size\": ";
+            response += to_string(heap_info.max_size);
+            response += ", \"alloc_cnt\": ";
+            response += to_string(heap_info.alloc_cnt);
+            response += ", \"reserved_size\": ";
+            response += to_string(heap_info.reserved_size);
+            response += "}";
 
-        builder.send(socket, buffer, n-1);
+            builder.send(socket, response.c_str(), response.length());
+        }
+        if (request->get_filename() == "test") {
+            HttpResponseBuilder builder(200);
+            builder.set_header("Content-Type", "text/html; charset=utf-8");
+
+            string response;
+            response.reserve(512);
+
+            response += "{\"test\": 42}";
+
+            builder.send(socket, response.c_str(), response.length());
+        }
+        else {
+            HttpResponseBuilder builder(404);
+            builder.send(socket, NULL, 0);
+        }
     }
     else {
         HttpResponseBuilder builder(404);
