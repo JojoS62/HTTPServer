@@ -152,20 +152,9 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
         printf("toggle LED called\n\n");
         //led = !led;
+
         spif.init();
-        printf("spif size: %llu\n",         spif.size());
-        printf("spif read size: %llu\n",    spif.get_read_size());
-        printf("spif program size: %llu\n", spif.get_program_size());
-        printf("spif erase size: %llu\n",   spif.get_erase_size());
-        // Write "Hello World!" to the first block
-        char *buffer = (char*)malloc(spif.get_erase_size());
-        sprintf(buffer, "Hello World!\n");
         spif.erase(0, spif.get_erase_size());
-        spif.program(buffer, 0, spif.get_erase_size());
-        // Read back what was stored
-        spif.read(buffer, 0, spif.get_erase_size());
-        printf("%s", buffer);
-        // Deinitialize the device
         spif.deinit();
         
         lfs.format(&spif);
@@ -191,7 +180,7 @@ void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
             mbed_stats_heap_get( &heap_info );
 
             HttpResponseBuilder builder(200);
-            builder.set_header("Content-Type", "text/html; charset=utf-8");
+            builder.set_header("Content-Type", "application/json");
 
             string response;
             response.reserve(512);
@@ -210,7 +199,7 @@ void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
         }
         if (request->get_filename() == "test") {
             HttpResponseBuilder builder(200);
-            builder.set_header("Content-Type", "text/html; charset=utf-8");
+            builder.set_header("Content-Type", "application/json");
 
             string response;
             response.reserve(512);
@@ -274,13 +263,14 @@ class CallbackTest
 };
 #endif
 
-void print_dir() {
+void print_dir(FileSystem *fs, const char* dirname) {
     Dir dir;
     struct dirent ent;
 
-    dir.open(&fs, "/htmlRoot");
-    //dir.readdir();
-    // Check the filenames in directory
+    dir.open(fs, dirname);
+    printf("contents of dir: %s\n", dirname);
+    printf("----------------------------------------------------\n");
+
     while (1) {
         size_t res = dir.read(&ent);
         if (0 == res) {
@@ -292,12 +282,28 @@ void print_dir() {
     dir.close();
 }
 
+void print_SPIF_info() 
+{
+        spif.init();
+        printf("spif size: %llu\n",         spif.size());
+        printf("spif read size: %llu\n",    spif.get_read_size());
+        printf("spif program size: %llu\n", spif.get_program_size());
+        printf("spif erase size: %llu\n",   spif.get_erase_size());
+        spif.deinit();
+}
 
 int main() {
     printf("Hello from "  TOSTRING(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
-    print_dir();
+    print_SPIF_info();
+    printf("\n");
+
+    print_dir(&lfs, "/");
+    printf("\n");
+
+    print_dir(&fs, "/htmlRoot");
+    printf("\n");
 
     // IO Thread
     threadIO.start();
