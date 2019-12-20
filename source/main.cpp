@@ -3,7 +3,6 @@
 //#include "network-helper.h"
 #include "HttpServer.h"
 #include "HttpResponseBuilder.h"
-#include "HttpParsedRequest.h"
 #include "WebsocketHandlers.h"
 
 #include "threadIO.h"
@@ -96,21 +95,8 @@ Thread msgSender(osPriorityNormal, DEFAULT_STACK_SIZE * 3);
 
 Mutex mutexReqHandlerRoot;
 
-
-// Callback function, grab the next chunk and return it
-const void * get_chunk(uint32_t* out_size) {
-    // If you don't have any data left, set out_size to 0 and return a null pointer
-    {
-        *out_size = 0;
-        return NULL;
-    }
-//    *out_size = strlen(chunk);
-
-    return nullptr; // chunk;
-}
-
 // Requests come in here
-void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
+void request_handler(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerRoot.lock();
 #if 1
     printf("[Http]Request came in: %s %s\n", http_method_str(request->get_method()), request->get_url().c_str());
@@ -130,7 +116,7 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
 #endif
 
     if (request->get_method() == HTTP_GET && request->get_url() == "/") {
-        HttpResponseBuilder builder(200);
+        HttpResponseBuilder builder(200, clientConnection);
         builder.set_header("Content-Type", "text/html; charset=utf-8");
 
         char response[] = "<html><head><title>Hello from mbed</title></head>"
@@ -142,44 +128,37 @@ void request_handler(HttpParsedRequest* request, TCPSocket* socket) {
                 "}</script>"
             "</body></html>";
 
-        builder.send(socket, response, sizeof(response) - 1);
+        builder.send(response, sizeof(response) - 1);
     }
     else if(request->get_method() == HTTP_GET) {
-        HttpResponseBuilder builder(200);
+        HttpResponseBuilder builder(200, clientConnection);
 
-        builder.sendFile(socket, &fs, request->get_url());
+        builder.sendHeaderAndFile(&fs, request->get_url());
     }
     else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
         printf("toggle LED called\n\n");
         //led = !led;
 
-        spif.init();
-        spif.erase(0, spif.get_erase_size());
-        spif.deinit();
-        
-        lfs.format(&spif);
-
-        HttpResponseBuilder builder(200);
-        builder.send(socket, NULL, 0);
+        HttpResponseBuilder builder(200, clientConnection);
+        builder.send(NULL, 0);
     }
     else {
-        HttpResponseBuilder builder(404);
-        builder.send(socket, NULL, 0);
+        HttpResponseBuilder builder(404, clientConnection);
+        builder.send(NULL, 0);
     }
     mutexReqHandlerRoot.unlock();
 }
 
-char buffer[1024];
 Mutex mutexReqHandlerStatus;
 
-void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
+void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerStatus.lock();
     if (request->get_method() == HTTP_GET) {
         if (request->get_filename() == "mem") {
             mbed_stats_heap_t heap_info;
             mbed_stats_heap_get( &heap_info );
 
-            HttpResponseBuilder builder(200);
+            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
 
             string response;
@@ -195,10 +174,10 @@ void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
             response += to_string(heap_info.reserved_size);
             response += "}";
 
-            builder.send(socket, response.c_str(), response.length());
+            builder.send(response.c_str(), response.length());
         }
         if (request->get_filename() == "test") {
-            HttpResponseBuilder builder(200);
+            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
 
             string response;
@@ -206,16 +185,16 @@ void request_handler_getStatus(HttpParsedRequest* request, TCPSocket* socket) {
 
             response += "{\"test\": 42}";
 
-            builder.send(socket, response.c_str(), response.length());
+            builder.send(response.c_str(), response.length());
         }
         else {
-            HttpResponseBuilder builder(404);
-            builder.send(socket, NULL, 0);
+            HttpResponseBuilder builder(404, clientConnection);
+            builder.send(NULL, 0);
         }
     }
     else {
-        HttpResponseBuilder builder(404);
-        builder.send(socket, NULL, 0);
+        HttpResponseBuilder builder(404, clientConnection);
+        builder.send(NULL, 0);
     }
     mutexReqHandlerStatus.unlock();
 }
@@ -262,6 +241,16 @@ class CallbackTest
     int arrivedcount;
 };
 #endif
+
+void formatSPIFlash()
+{
+    spif.init();
+    spif.erase(0, spif.get_erase_size());
+    spif.deinit();
+    
+    lfs.format(&spif);
+}
+
 
 void print_dir(FileSystem *fs, const char* dirname) {
     Dir dir;
