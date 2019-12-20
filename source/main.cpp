@@ -118,8 +118,10 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     if (request->get_method() == HTTP_GET && request->get_url() == "/") {
         HttpResponseBuilder builder(200, clientConnection);
         builder.set_header("Content-Type", "text/html; charset=utf-8");
+        builder.sendHeader();
 
-        char response[] = "<html><head><title>Hello from mbed</title></head>"
+        string body = 
+            "<html><head><title>Hello from mbed</title></head>"
             "<body>"
                 "<h1>mbed webserver</h1>"
                 "<button id=\"toggle\">Format Flash with LittleFS</button>"
@@ -128,7 +130,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
                 "}</script>"
             "</body></html>";
 
-        builder.send(response, sizeof(response) - 1);
+        builder.sendBodyString(body);
     }
     else if(request->get_method() == HTTP_GET) {
         HttpResponseBuilder builder(200, clientConnection);
@@ -160,34 +162,35 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
+            builder.sendHeader();
 
-            string response;
-            response.reserve(512);
+            string body;
+            body.reserve(512);
 
-            response += "{\"current_size\": ";
-            response += to_string(heap_info.current_size);
-            response += ", \"max_size\": ";
-            response += to_string(heap_info.max_size);
-            response += ", \"alloc_cnt\": ";
-            response += to_string(heap_info.alloc_cnt);
-            response += ", \"reserved_size\": ";
-            response += to_string(heap_info.reserved_size);
-            response += "}";
+            body += "{\"current_size\": ";
+            body += to_string(heap_info.current_size);
+            body += ", \"max_size\": ";
+            body += to_string(heap_info.max_size);
+            body += ", \"alloc_cnt\": ";
+            body += to_string(heap_info.alloc_cnt);
+            body += ", \"reserved_size\": ";
+            body += to_string(heap_info.reserved_size);
+            body += "}";
 
-            builder.send(response.c_str(), response.length());
-        }
+            builder.sendBodyString(body);
+        } else
         if (request->get_filename() == "test") {
             HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
+            builder.sendHeader();
 
-            string response;
-            response.reserve(512);
+            string body;
+            body.reserve(512);
 
-            response += "{\"test\": 42}";
+            body += "{\"test\": 42}";
 
-            builder.send(response.c_str(), response.length());
-        }
-        else {
+            builder.sendBodyString(body);
+        } else {
             HttpResponseBuilder builder(404, clientConnection);
             builder.send(NULL, 0);
         }
