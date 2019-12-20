@@ -98,23 +98,6 @@ Mutex mutexReqHandlerRoot;
 // Requests come in here
 void request_handler(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerRoot.lock();
-#if 1
-    printf("[Http]Request came in: %s %s\n", http_method_str(request->get_method()), request->get_url().c_str());
-    
-    MapHeaderIterator it;
-    int i = 0;
-
-    for (it = request->headers.begin(); it != request->headers.end(); it++) {
-        printf("[%d] ", i);
-        printf(it->first.c_str());
-        printf(" : ");
-        printf(it->second.c_str());
-        printf("\n");
-        i++;
-    }
-    fflush(stdout);
-#endif
-
     if (request->get_method() == HTTP_GET && request->get_url() == "/") {
         HttpResponseBuilder builder(200, clientConnection);
         builder.set_header("Content-Type", "text/html; charset=utf-8");
