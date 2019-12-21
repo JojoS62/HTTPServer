@@ -138,14 +138,37 @@ string getCPUIDame(uint32_t cpu_id)
     return id;    
 }
 
+const char* StateNames[] {
+        "Inactive",           /**< NOT USED */
+        "Ready",              /**< Ready to run */
+        "Running",            /**< Running */
+        "WaitingDelay",       /**< Waiting for a delay to occur */
+        "WaitingJoin",        /**< Waiting for thread to join. Only happens when using RTX directly. */
+        "WaitingThreadFlag",  /**< Waiting for a thread flag to be set */
+        "WaitingEventFlag",   /**< Waiting for a event flag to be set */
+        "WaitingMutex",       /**< Waiting for a mutex event to occur */
+        "WaitingSemaphore",   /**< Waiting for a semaphore event to occur */
+        "WaitingMemoryPool",  /**< Waiting for a memory pool */
+        "WaitingMessageGet",  /**< Waiting for message to arrive */
+        "WaitingMessagePut",  /**< Waiting for message to be send */
+        "WaitingInterval",    /**< NOT USED */
+        "WaitingOr",          /**< NOT USED */
+        "WaitingAnd",         /**< NOT USED */
+        "WaitingMailbox",     /**< NOT USED (Mail is implemented as MemoryPool and Queue) */
+
+        /* Not in sync with RTX below here */
+        "Deleted",            /**< The task has been deleted or not started */
+};
+
 void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerStatus.lock();
+    HttpResponseBuilder builder(200, clientConnection);
+
     if (request->get_method() == HTTP_GET) {
         if (request->get_filename() == "mem") {
             mbed_stats_heap_t heap_info;
             mbed_stats_heap_get( &heap_info );
 
-            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
             builder.sendHeader();
 
@@ -168,7 +191,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             mbed_stats_cpu_t stats;
             mbed_stats_cpu_get(&stats);
 
-            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
             builder.sendHeader();
 
@@ -191,7 +213,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             mbed_stats_sys_t stats;
             mbed_stats_sys_get(&stats);
 
-            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
             builder.sendHeader();
 
@@ -216,38 +237,33 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             mbed_stats_thread_t *stats = new mbed_stats_thread_t[MAX_THREAD_STATS];
             int count = mbed_stats_thread_get_each(stats, MAX_THREAD_STATS);
     
-            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
             builder.sendHeader();
 
             string body;
             body.reserve(1024);
 
-            body += "[";
+            body += "[[\"ID\",\"Name\",\"State\",\"Priority\",\"Stack Size\",\"Stack Space\"],";
+
             for(int i = 0; i < count; i++) {
-                body += "{\"ID\": ";
-                body += to_string(stats[i].id);
-                body += ", \"Name\": ";
-                body += "\"" + string(stats[i].name) + "\"";
-                body += ", \"State\": \"";
-                body += to_string(stats[i].state);
-                body += "\", \"Priority\": ";
-                body += to_string(stats[i].priority);
-                body += ", \"Stack Size\": ";
-                body += to_string(stats[i].stack_size);
-                body += ", \"Stack Space\": ";
+                body += "[";
+                body += to_string(stats[i].id) + ",";
+                body += "\"" + string(stats[i].name) + "\",";
+                body += "\"" + string(StateNames[stats[i].state]) + "\",";
+                body += to_string(stats[i].priority) + ",";
+                body += to_string(stats[i].stack_size) + ",";
                 body += to_string(stats[i].stack_space);
                 if (i < count-1)
-                    body += "},";
+                    body += "],";
                 else
-                    body += "}";
+                    body += "]]";
             }
-            body += "]";
+            
+            delete stats;
 
             builder.sendBodyString(body);
         } else
         if (request->get_filename() == "test") {
-            HttpResponseBuilder builder(200, clientConnection);
             builder.set_header("Content-Type", "application/json");
             builder.sendHeader();
 
@@ -258,12 +274,12 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             builder.sendBodyString(body);
         } else {
-            HttpResponseBuilder builder(404, clientConnection);
+            builder.setStatusCode(404);
             builder.send(NULL, 0);
         }
     }
     else {
-        HttpResponseBuilder builder(404, clientConnection);
+        builder.setStatusCode(404);
         builder.send(NULL, 0);
     }
     mutexReqHandlerStatus.unlock();
