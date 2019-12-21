@@ -35,10 +35,13 @@ tbody {
 </head>
 <body>
     <h1>Mbed Webserver Status</h1>
+    <table id="sysinfo" />
+    <table id="memtab" />
+    <table id="cpustats" />
+    <table id="threads" />
     <script>
     function createTable(id, jsonString, titles) {
-        var table1 = document.createElement("TABLE");
-        table1.id = id;
+        var table1 = document.getElementById(id);
 
         for(var k in jsonString)
         {
@@ -57,6 +60,32 @@ tbody {
         cell.innerHTML = titles[0];         
         cell = row.insertCell(1);
         cell.innerHTML = titles[1];    
+
+        document.body.appendChild(table1);  
+    };
+
+    function create2DTable(id, jsonString) {
+        var table1 = document.getElementById(id);
+
+        for(var k in jsonString)
+        {
+            if (k == 0) continue;
+
+            var row = table1.insertRow(-1);
+            for(var col in jsonString[k])
+            {
+                var cell = row.insertCell(-1);
+                cell.innerHTML = jsonString[k][col];
+            }
+        }
+
+        var header = table1.createTHead();
+        row = header.insertRow(0);    
+        for(var col in jsonString[0])
+        {
+            var cell = row.insertCell(-1);
+            cell.innerHTML = jsonString[0][col];
+        }
 
         document.body.appendChild(table1);  
     };
@@ -87,6 +116,15 @@ tbody {
         createTable("cpustats", jsonResponse, ["<b>Time</b>", "<b>[s]</b>"]);
     };
     reqCPU.send(null);
+
+    var reqThreads = new XMLHttpRequest();
+    reqThreads.responseType = 'json';
+    reqThreads.open('GET', '/stats/threads', true);
+    reqThreads.onload  = function(e) {
+        var jsonResponse = reqThreads.response;
+        create2DTable("threads", jsonResponse);
+    };
+    reqThreads.send(null);
     </script>
 </body>
 </html>
