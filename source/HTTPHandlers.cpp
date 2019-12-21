@@ -100,6 +100,44 @@ const char* Compilername[] = {
     "IAR"
 };
 
+string getCPUIDame(uint32_t cpu_id) 
+{
+    uint16_t rev = cpu_id & 0xf;
+    cpu_id = (cpu_id >> 4) & 0xfff;
+
+    string id;
+    id.reserve(32);
+
+    switch (cpu_id) {
+        case 0xC20:  
+            id = "Cortex-M0";
+            break;
+        case 0xC60: 
+            id = "Cortex-M0+";
+            break;
+        case 0xC23:
+            id = "Cortex-M3";
+            break;
+        case 0xC24:
+            id = "Cortex-M4";
+            break;
+        case 0xC27:
+            id = "Cortex-M7";
+            break;
+        case 0xD20:
+            id = "Cortex-M23";
+            break;
+        case 0xD21:
+            id = "Cortex-M33";
+            break;
+        default:
+            id = "unknown";
+    }
+    id += " Rev: " + to_string(rev);
+
+    return id;    
+}
+
 void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerStatus.lock();
     if (request->get_method() == HTTP_GET) {
@@ -161,15 +199,50 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             body.reserve(512);
 
             body += "{\"MBed OS Version\": ";
-            body += to_string(stats.os_version);
+            body += "\"" + to_string(MBED_MAJOR_VERSION) + "." + to_string(MBED_MINOR_VERSION) + "." + to_string(MBED_PATCH_VERSION) + "\"";
             body += ", \"CPU Id\": ";
-            body += to_string(stats.cpu_id);
+            body += "\"" + getCPUIDame(stats.cpu_id) + "\"";
             if ((stats.compiler_id > 1) && (stats.compiler_id < 3))
             body += ", \"Compiler Id\": \"";
             body += Compilername[stats.compiler_id - 1];
             body += "\", \"Compiler Version\": ";
             body += to_string(stats.compiler_version);
             body += "}";
+
+            builder.sendBodyString(body);
+        } else
+        if (request->get_filename() == "threads") {
+            const uint MAX_THREAD_STATS = 32;
+            mbed_stats_thread_t *stats = new mbed_stats_thread_t[MAX_THREAD_STATS];
+            int count = mbed_stats_thread_get_each(stats, MAX_THREAD_STATS);
+    
+            HttpResponseBuilder builder(200, clientConnection);
+            builder.set_header("Content-Type", "application/json");
+            builder.sendHeader();
+
+            string body;
+            body.reserve(1024);
+
+            body += "[";
+            for(int i = 0; i < count; i++) {
+                body += "{\"ID\": ";
+                body += to_string(stats[i].id);
+                body += ", \"Name\": ";
+                body += "\"" + string(stats[i].name) + "\"";
+                body += ", \"State\": \"";
+                body += to_string(stats[i].state);
+                body += "\", \"Priority\": ";
+                body += to_string(stats[i].priority);
+                body += ", \"Stack Size\": ";
+                body += to_string(stats[i].stack_size);
+                body += ", \"Stack Space\": ";
+                body += to_string(stats[i].stack_space);
+                if (i < count-1)
+                    body += "},";
+                else
+                    body += "}";
+            }
+            body += "]";
 
             builder.sendBodyString(body);
         } else
