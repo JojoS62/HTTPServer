@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8"/>
+<style>
+table {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+}
+
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+tbody tr:hover {background-color: #ddd;}
+
+thead {
+  padding-top: 12px;
+  padding-bottom: 20px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
+
+tbody {
+  padding-top: 12px;
+  padding-bottom: 20px;
+  text-align: left;
+  background-color: ##f2f2f2;
+  color: black;
+}
+</style>
+<title>Hello from Mbed</title>
+</head>
+<body>
+    <h1>Mbed Webserver Status</h1>
+     <label name="memory" id="memory" value=""><br>
+    <script>
+    var req = new XMLHttpRequest();
+    req.responseType = 'json';
+    req.open('GET', '/stats/mem', true);
+    req.onload  = function(e) {
+        var jsonResponse = req.response;
+
+        var table1 = document.createElement("TABLE");
+        table1.id = "memtab";
+
+        for(var k in jsonResponse)
+        {
+            var row = table1.insertRow(0);
+            {
+                var cell = row.insertCell(0);
+                cell.innerHTML = k;
+                cell = row.insertCell(1);
+                cell.innerHTML = jsonResponse[k];
+            }
+        }
+
+        var header = table1.createTHead();
+        row = header.insertRow(0);    
+        cell = row.insertCell(0);
+        cell.innerHTML = "<b>RAM</b>";         
+        cell = row.insertCell(1);
+        cell.innerHTML = "<b>Bytes</b>";    
+
+        document.body.appendChild(table1);  
+    };
+    req.send(null);
+    </script>
+</body>
+</html>
