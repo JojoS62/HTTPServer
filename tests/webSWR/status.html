@@ -34,38 +34,49 @@ tbody {
 </head>
 <body>
     <h1>Mbed Webserver Status</h1>
-     <label name="memory" id="memory" value=""><br>
     <script>
-    var req = new XMLHttpRequest();
-    req.responseType = 'json';
-    req.open('GET', '/stats/mem', true);
-    req.onload  = function(e) {
-        var jsonResponse = req.response;
-
+    function createTable(id, jsonString, titles) {
         var table1 = document.createElement("TABLE");
-        table1.id = "memtab";
+        table1.id = id;
 
-        for(var k in jsonResponse)
+        for(var k in jsonString)
         {
             var row = table1.insertRow(0);
             {
                 var cell = row.insertCell(0);
                 cell.innerHTML = k;
                 cell = row.insertCell(1);
-                cell.innerHTML = jsonResponse[k];
+                cell.innerHTML = jsonString[k];
             }
         }
 
         var header = table1.createTHead();
         row = header.insertRow(0);    
         cell = row.insertCell(0);
-        cell.innerHTML = "<b>RAM</b>";         
+        cell.innerHTML = titles[0];         
         cell = row.insertCell(1);
-        cell.innerHTML = "<b>Bytes</b>";    
+        cell.innerHTML = titles[1];    
 
         document.body.appendChild(table1);  
     };
-    req.send(null);
+
+    var reqMem = new XMLHttpRequest();
+    reqMem.responseType = 'json';
+    reqMem.open('GET', '/stats/mem', true);
+    reqMem.onload  = function(e) {
+        var jsonResponse = reqMem.response;
+        createTable("memtab", jsonResponse, ["<b>RAM</b>", "<b>Bytes</b>"]);
+    };
+    reqMem.send(null);
+
+    var reqCPU = new XMLHttpRequest();
+    reqCPU.responseType = 'json';
+    reqCPU.open('GET', '/stats/cpu', true);
+    reqCPU.onload  = function(e) {
+        var jsonResponse = reqCPU.response;
+        createTable("cpustats", jsonResponse, ["<b>Time</b>", "<b>[s]</b>"]);
+    };
+    reqCPU.send(null);
     </script>
 </body>
 </html>

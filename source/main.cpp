@@ -1,17 +1,15 @@
 #include "mbed.h"
 
+#include "globalVars.h"
+
 //#include "network-helper.h"
 #include "HttpServer.h"
 #include "HttpResponseBuilder.h"
 #include "WebsocketHandlers.h"
+#include "HTTPHandlers.h"
 
 #include "threadIO.h"
 #include "MQTTThreadedClient.h"
-
-#include "SDIOBlockDevice.h"
-#include "SPIFBlockDevice.h"
-#include "FATFileSystem.h"
-#include "LittleFileSystem.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -22,11 +20,6 @@
 
 #define DEFAULT_STACK_SIZE (4096)
 
-SDIOBlockDevice bd;
-FATFileSystem fs("sda", &bd);
-
-SPIFBlockDevice spif(PB_5, PB_4, PB_3, PB_0);
-LittleFileSystem lfs("sdb", &spif);
 
 #ifdef USE_TFTPSERVER
 #include "threadTFTPServer.h"
@@ -35,155 +28,12 @@ ThreadTFTPServer  threadTFTPpServer;
 
 #define SAMPLE_TIME     1000 // milli-sec
 #define COMPLETED_FLAG (1UL << 0)
-PlatformMutex stdio_mutex;
 EventFlags threadFlag;
 
-void print_stats()
-{
-    mbed_stats_socket_t stats[MBED_CONF_NSAPI_SOCKET_STATS_MAX_COUNT];
-    static int num = 0;
-    int count;
-
-    memset(stats, 0, sizeof(mbed_stats_socket_t) * MBED_CONF_NSAPI_SOCKET_STATS_MAX_COUNT);
-    printf("%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n", "Num", "ID", "State", "Proto", "Sent", "Recv", "Time");
-    //while (COMPLETED_FLAG != threadFlag.get()) {
-        count = SocketStats::mbed_stats_socket_get_each(&stats[0], MBED_CONF_NSAPI_SOCKET_STATS_MAX_COUNT);
-        for (int i = 0; i < count; i++) {
-            stdio_mutex.lock();
-            printf("\n%-15d", num);
-            printf("%-15p", stats[i].reference_id);
-
-            switch (stats[i].state) {
-                case SOCK_CLOSED:
-                    printf("%-15s", "Closed");
-                    break;
-                case SOCK_OPEN:
-                    printf("%-15s", "Open");
-                    break;
-                case SOCK_CONNECTED:
-                    printf("%-15s", "Connected");
-                    break;
-                case SOCK_LISTEN:
-                    printf("%-15s", "Listen");
-                    break;
-                default:
-                    printf("%-15s", "Error");
-                    break;
-            }
-
-            if (NSAPI_TCP == stats[i].proto) {
-                printf("%-15s", "TCP");
-            } else {
-                printf("%-15s", "UDP");
-            }
-            printf("%-15d", stats[i].sent_bytes);
-            printf("%-15d", stats[i].recv_bytes);
-            printf("%-15lld\n", stats[i].last_change_tick);
-            stdio_mutex.unlock();
-        }
-        num++;
-        //ThisThread::sleep_for(SAMPLE_TIME);
-    //}
-    // Now allow the stats thread to simply exit by itself gracefully.
-}
-
-
-//DigitalOut led(LED1);
 
 ThreadIO threadIO(100);
 Thread msgSender(osPriorityNormal, DEFAULT_STACK_SIZE * 3);
 
-Mutex mutexReqHandlerRoot;
-
-// Requests come in here
-void request_handler(HttpParsedRequest* request, ClientConnection* clientConnection) {
-    mutexReqHandlerRoot.lock();
-    if (request->get_method() == HTTP_GET && request->get_url() == "/") {
-        HttpResponseBuilder builder(200, clientConnection);
-        builder.set_header("Content-Type", "text/html; charset=utf-8");
-        builder.sendHeader();
-
-        string body = 
-            "<html><head><title>Hello from mbed</title></head>"
-            "<body>"
-                "<h1>mbed webserver</h1>"
-                "<button id=\"toggle\">Format Flash with LittleFS</button>"
-                "<script>document.querySelector('#toggle').onclick = function() {"
-                    "var x = new XMLHttpRequest(); x.open('POST', '/toggle'); x.send();"
-                "}</script>"
-            "</body></html>";
-
-        builder.sendBodyString(body);
-    }
-    else if(request->get_method() == HTTP_GET) {
-        HttpResponseBuilder builder(200, clientConnection);
-
-        builder.sendHeaderAndFile(&fs, request->get_url());
-    }
-    else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
-        printf("toggle LED called\n\n");
-        //led = !led;
-
-        HttpResponseBuilder builder(200, clientConnection);
-        builder.send(NULL, 0);
-    }
-    else {
-        HttpResponseBuilder builder(404, clientConnection);
-        builder.send(NULL, 0);
-    }
-    mutexReqHandlerRoot.unlock();
-}
-
-Mutex mutexReqHandlerStatus;
-
-void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) {
-    mutexReqHandlerStatus.lock();
-    if (request->get_method() == HTTP_GET) {
-        if (request->get_filename() == "mem") {
-            mbed_stats_heap_t heap_info;
-            mbed_stats_heap_get( &heap_info );
-
-            HttpResponseBuilder builder(200, clientConnection);
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(512);
-
-            body += "{\"current_size\": ";
-            body += to_string(heap_info.current_size);
-            body += ", \"max_size\": ";
-            body += to_string(heap_info.max_size);
-            body += ", \"alloc_cnt\": ";
-            body += to_string(heap_info.alloc_cnt);
-            body += ", \"reserved_size\": ";
-            body += to_string(heap_info.reserved_size);
-            body += "}";
-
-            builder.sendBodyString(body);
-        } else
-        if (request->get_filename() == "test") {
-            HttpResponseBuilder builder(200, clientConnection);
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(512);
-
-            body += "{\"test\": 42}";
-
-            builder.sendBodyString(body);
-        } else {
-            HttpResponseBuilder builder(404, clientConnection);
-            builder.send(NULL, 0);
-        }
-    }
-    else {
-        HttpResponseBuilder builder(404, clientConnection);
-        builder.send(NULL, 0);
-    }
-    mutexReqHandlerStatus.unlock();
-}
 
 #ifdef USE_MQTT
 using namespace MQTT;
@@ -227,45 +77,6 @@ class CallbackTest
     int arrivedcount;
 };
 #endif
-
-void formatSPIFlash()
-{
-    spif.init();
-    spif.erase(0, spif.get_erase_size());
-    spif.deinit();
-    
-    lfs.format(&spif);
-}
-
-
-void print_dir(FileSystem *fs, const char* dirname) {
-    Dir dir;
-    struct dirent ent;
-
-    dir.open(fs, dirname);
-    printf("contents of dir: %s\n", dirname);
-    printf("----------------------------------------------------\n");
-
-    while (1) {
-        size_t res = dir.read(&ent);
-        if (0 == res) {
-            break;
-        }
-        printf(ent.d_name);
-        printf("\n");
-    }
-    dir.close();
-}
-
-void print_SPIF_info() 
-{
-        spif.init();
-        printf("spif size: %llu\n",         spif.size());
-        printf("spif read size: %llu\n",    spif.get_read_size());
-        printf("spif program size: %llu\n", spif.get_program_size());
-        printf("spif erase size: %llu\n",   spif.get_erase_size());
-        spif.deinit();
-}
 
 int main() {
     printf("Hello from "  TOSTRING(TARGET_NAME) "\n");
