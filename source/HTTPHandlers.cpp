@@ -94,6 +94,11 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
 }
 
 Mutex mutexReqHandlerStatus;
+const char* Compilername[] = {
+    "ARM",
+    "GCC_ARM",
+    "IAR"
+};
 
 void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerStatus.lock();
@@ -140,6 +145,30 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             body += to_string(stats.sleep_time / 1000000);
             body += ", \"deep_sleep_time\": ";
             body += to_string(stats.deep_sleep_time / 1000000);
+            body += "}";
+
+            builder.sendBodyString(body);
+        } else
+        if (request->get_filename() == "sysinfo") {
+            mbed_stats_sys_t stats;
+            mbed_stats_sys_get(&stats);
+
+            HttpResponseBuilder builder(200, clientConnection);
+            builder.set_header("Content-Type", "application/json");
+            builder.sendHeader();
+
+            string body;
+            body.reserve(512);
+
+            body += "{\"MBed OS Version\": ";
+            body += to_string(stats.os_version);
+            body += ", \"CPU Id\": ";
+            body += to_string(stats.cpu_id);
+            if ((stats.compiler_id > 1) && (stats.compiler_id < 3))
+            body += ", \"Compiler Id\": \"";
+            body += Compilername[stats.compiler_id - 1];
+            body += "\", \"Compiler Version\": ";
+            body += to_string(stats.compiler_version);
             body += "}";
 
             builder.sendBodyString(body);
