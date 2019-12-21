@@ -5,6 +5,7 @@
 table {
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
   border-collapse: collapse;
+  margin-bottom: 20px;
 }
 
 td {
@@ -16,7 +17,7 @@ tbody tr:hover {background-color: #ddd;}
 
 thead {
   padding-top: 12px;
-  padding-bottom: 20px;
+  padding-bottom: 12px;
   text-align: left;
   background-color: #4CAF50;
   color: white;
@@ -24,7 +25,7 @@ thead {
 
 tbody {
   padding-top: 12px;
-  padding-bottom: 20px;
+  padding-bottom: 12px;
   text-align: left;
   background-color: ##f2f2f2;
   color: black;
@@ -41,7 +42,7 @@ tbody {
 
         for(var k in jsonString)
         {
-            var row = table1.insertRow(0);
+            var row = table1.insertRow(-1);
             {
                 var cell = row.insertCell(0);
                 cell.innerHTML = k;
@@ -59,6 +60,15 @@ tbody {
 
         document.body.appendChild(table1);  
     };
+
+    var reqSys = new XMLHttpRequest();
+    reqSys.responseType = 'json';
+    reqSys.open('GET', '/stats/sysinfo', true);
+    reqSys.onload  = function(e) {
+        var jsonResponse = reqSys.response;
+        createTable("sysinfo", jsonResponse, ["<b>Type</b>", "<b>Value</b>"]);
+    };
+    reqSys.send(null);
 
     var reqMem = new XMLHttpRequest();
     reqMem.responseType = 'json';
