@@ -57,8 +57,9 @@ Mutex mutexReqHandlerRoot;
 // Requests come in here
 void request_handler(HttpParsedRequest* request, ClientConnection* clientConnection) {
     mutexReqHandlerRoot.lock();
-    if (request->get_method() == HTTP_GET && request->get_url() == "/") {
-        HttpResponseBuilder builder(200, clientConnection);
+    HttpResponseBuilder builder(200, clientConnection);
+
+    if (request->get_method() == HTTP_GET && request->get_url() == "/format") {
         builder.set_header("Content-Type", "text/html; charset=utf-8");
         builder.sendHeader();
 
@@ -73,23 +74,16 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
             "</body></html>";
 
         builder.sendBodyString(body);
-    }
-    else if(request->get_method() == HTTP_GET) {
-        HttpResponseBuilder builder(200, clientConnection);
-        builder.set_header("Access-Control-Allow-Origin", "*");
-
+    } else if(request->get_method() == HTTP_GET && request->get_url() == "/") {
+        builder.sendHeaderAndFile(&fs, "/index.html");
+    } else if(request->get_method() == HTTP_GET) {
         builder.sendHeaderAndFile(&fs, request->get_url());
-    }
-    else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
+    } else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
         printf("toggle LED called\n\n");
         //led = !led;
-
-        HttpResponseBuilder builder(200, clientConnection);
-        builder.send(NULL, 0);
-    }
-    else {
-        HttpResponseBuilder builder(404, clientConnection);
-        builder.send(NULL, 0);
+        builder.sendHeader();
+    } else {
+        builder.sendHeader(404);
     }
     mutexReqHandlerRoot.unlock();
 }
@@ -252,13 +246,11 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 
             builder.sendBodyString(body);
         } else {
-            builder.setStatusCode(404);
-            builder.send(NULL, 0);
+            builder.sendHeader(404);
         }
     }
     else {
-        builder.setStatusCode(404);
-        builder.send(NULL, 0);
+        builder.sendHeader(404);
     }
     mutexReqHandlerStatus.unlock();
 }
