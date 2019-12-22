@@ -30,12 +30,10 @@ ThreadTFTPServer  threadTFTPpServer;
 #define COMPLETED_FLAG (1UL << 0)
 EventFlags threadFlag;
 
-
 ThreadIO threadIO(100);
-Thread msgSender(osPriorityNormal, DEFAULT_STACK_SIZE * 3);
-
 
 #ifdef USE_MQTT
+Thread msgSender(osPriorityNormal, DEFAULT_STACK_SIZE * 3);
 using namespace MQTT;
 /*  
     MQTT
@@ -109,10 +107,6 @@ int main() {
         printf("Failed to connect to network (%d)\n", connect_status);
         return 2;
     } 	
-
-    // show threadstatistics
-    //Thread *thread = new Thread(osPriorityNormal1, 2048);
-    //thread->start(print_stats);
 
 #ifdef USE_HTTPSERVER	
     HttpServer server(network, 5, 4);               // max 5 threads, 4 websockets
