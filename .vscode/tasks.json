@@ -46,6 +46,12 @@
             "args": ["compile", "--build", "../../BUILD/${workspaceFolderBasename}/Develop", "--source", ".", "--source",  "../../mbed-os", "--source", "../../libs", "--source", "../../drivers", "--source", "../../custom_targets", "--source", "../../components", "--profile", "develop"]
         },
         {
+            "label": "export VSCode",
+            "group": "build",
+            "command": "mbed",
+            "args": ["export", "-i", "vscode_gcc_arm", "--source", ".", "--source",  "../../mbed-os", "--source", "../../libs", "--source", "../../drivers", "--source", "../../custom_targets", "--source", "../../components", "--profile", "debug"]
+        },
+        {
             "label": "echo",
             "type": "shell",
             "command": "echo \n\rworksspaceFolder: ${workspaceFolder}\n\rworkspaceFolderBasename: ${workspaceFolderBasename}"
