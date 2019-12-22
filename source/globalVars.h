@@ -3,9 +3,18 @@
 
 #include "mbed.h"
 #include "SDIOBlockDevice.h"
-#include "SPIFBlockDevice.h"
 #include "FATFileSystem.h"
+
+#ifdef COMPONENT_SPIF
+#include "SPIFBlockDevice.h"
 #include "LittleFileSystem.h"
+
+extern SPIFBlockDevice spif;
+extern LittleFileSystem lfs;
+
+void formatSPIFlash();
+void print_SPIF_info();
+#endif
 
 
 typedef struct 
@@ -16,13 +25,8 @@ typedef struct
 extern SDIOBlockDevice bd;
 extern FATFileSystem fs;
 
-extern SPIFBlockDevice spif;
-extern LittleFileSystem lfs;
-
 extern GlobalVars globalVars;
 
-void formatSPIFlash();
 void print_dir(FileSystem *fs, const char* dirname);
-void print_SPIF_info();
 
 #endif

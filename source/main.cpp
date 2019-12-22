@@ -82,8 +82,10 @@ int main() {
     printf("Hello from "  TOSTRING(TARGET_NAME) "\n");
     printf("Mbed OS version: %d.%d.%d\n\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
+#ifdef COMPONENT_SPIF
     print_SPIF_info();
     printf("\n");
+#endif
 
     print_dir(&lfs, "/");
     printf("\n");
