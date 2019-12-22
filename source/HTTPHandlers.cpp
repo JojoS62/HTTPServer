@@ -161,20 +161,20 @@ const char* StateNames[] {
         "Deleted",            /**< The task has been deleted or not started */
 };
 
-void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) {
+void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* clientConnection) 
+{
     mutexReqHandlerStatus.lock();
     HttpResponseBuilder builder(200, clientConnection);
+    builder.set_header("Content-Type", "application/json; charset=utf-8");
+    builder.sendHeader();
+
+    string body;
+    body.reserve(1024);
 
     if (request->get_method() == HTTP_GET) {
         if (request->get_filename() == "mem") {
             mbed_stats_heap_t heap_info;
             mbed_stats_heap_get( &heap_info );
-
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(512);
 
             body += "{\"current_size\": ";
             body += to_string(heap_info.current_size);
@@ -192,12 +192,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             mbed_stats_cpu_t stats;
             mbed_stats_cpu_get(&stats);
 
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(512);
-
             body += "{\"uptime\": ";
             body += to_string(stats.uptime / 1000000);
             body += ", \"idle_time\": ";
@@ -213,12 +207,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
         if (request->get_filename() == "sysinfo") {
             mbed_stats_sys_t stats;
             mbed_stats_sys_get(&stats);
-
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(512);
 
             body += "{\"MBed OS Version\": ";
             body += "\"" + to_string(MBED_MAJOR_VERSION) + "." + to_string(MBED_MINOR_VERSION) + "." + to_string(MBED_PATCH_VERSION) + "\"";
@@ -238,12 +226,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             mbed_stats_thread_t *stats = new mbed_stats_thread_t[MAX_THREAD_STATS];
             int count = mbed_stats_thread_get_each(stats, MAX_THREAD_STATS);
     
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(1024);
-
             body += "[[\"ID\",\"Name\",\"State\",\"Priority\",\"Stack Size\",\"Stack Space\"],";
 
             for(int i = 0; i < count; i++) {
@@ -265,11 +247,6 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
             builder.sendBodyString(body);
         } else
         if (request->get_filename() == "test") {
-            builder.set_header("Content-Type", "application/json");
-            builder.sendHeader();
-
-            string body;
-            body.reserve(512);
 
             body += "{\"test\": 42}";
 
