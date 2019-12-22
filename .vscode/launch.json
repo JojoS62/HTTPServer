@@ -3,7 +3,7 @@
     "configurations": [
         {
             "cwd": "${workspaceRoot}",
-            "executable": "./BUILD/DISCO_F769NI/GCC_ARM-DEBUG/${workspaceFolderBasename}.elf",
+            "executable": "../../BUILD/${workspaceFolderBasename}/DEBUG/${workspaceFolderBasename}.elf",
             "name": "Debug via JLink",
             "request": "launch",
             "type": "cortex-debug",
@@ -11,7 +11,7 @@
         },
         {
             "cwd": "${workspaceRoot}",
-            "executable": "./BUILD/DISCO_F746NG/GCC_ARM-DEBUG/${workspaceFolderBasename}.elf",
+            "executable": "../../BUILD/${workspaceFolderBasename}/DEBUG/${workspaceFolderBasename}.elf",
             "name": "Debug via pyOCD",
             "request": "launch",
             "type": "cortex-debug",
@@ -19,7 +19,7 @@
         },
         {
             "cwd": "${workspaceRoot}",
-            "executable": "./BUILD/DISCO_F769NI/GCC_ARM-DEBUG/${workspaceFolderBasename}.elf",
+            "executable": "../../BUILD/${workspaceFolderBasename}/DEBUG/${workspaceFolderBasename}.elf",
             "name": "Debug via stutil",
             "request": "launch",
             "type": "cortex-debug",
@@ -29,14 +29,14 @@
         },
         {
             "cwd": "${workspaceRoot}",
-            "executable": "./BUILD/DISCO_F746NG/GCC_ARM-DEBUG/${workspaceFolderBasename}.elf",
+            "executable": "../../BUILD/${workspaceFolderBasename}/DEBUG/${workspaceFolderBasename}.elf",
             "name": "Debug via openocd",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
             "configFiles": [
-                "../scripts/interface/stlink-v2-1.cfg",
-                "../scripts/target/stm32f7x.cfg"
+                "../scripts/interface/stlink-v2.cfg",
+                "../scripts/target/stm32f4x.cfg"
             ]
         },
         {
