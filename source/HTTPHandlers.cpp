@@ -76,6 +76,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     }
     else if(request->get_method() == HTTP_GET) {
         HttpResponseBuilder builder(200, clientConnection);
+        builder.set_header("Access-Control-Allow-Origin", "*");
 
         builder.sendHeaderAndFile(&fs, request->get_url());
     }
