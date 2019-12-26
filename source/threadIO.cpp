@@ -81,7 +81,7 @@ void ThreadIO::myThreadFn()
 
         led1 = !led1;
         for (uint i = 0; i < sizeof(globalVars.adcValues)/sizeof(globalVars.adcValues[0]); i++) {
-            globalVars.adcValues[i] = ads.readADC_SingleEnded_V(i); // read channel 0
+            globalVars.adcValues[i] = ads.readADC_SingleEnded_V(i) * 1000.0f; // read channel 0 [mV]
         }
         
         //printf("reading: %7.3f %7.3f %7.3f %7.3f\r\n", reading, reading1, reading2, reading3); // print reading
