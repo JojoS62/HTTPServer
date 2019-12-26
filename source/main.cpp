@@ -26,10 +26,6 @@
 ThreadTFTPServer  threadTFTPpServer;
 #endif
 
-#define SAMPLE_TIME     1000 // milli-sec
-#define COMPLETED_FLAG (1UL << 0)
-EventFlags threadFlag;
-
 ThreadIO threadIO(100);
 
 #ifdef USE_MQTT
