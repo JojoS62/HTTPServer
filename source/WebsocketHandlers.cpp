@@ -29,14 +29,7 @@ void WSHandler::onMessage(const char* text)
 {
     //printf("TEXT: [%s]\r\n", text);
 
-    mbed_stats_heap_t heap_info;
-    mbed_stats_heap_get( &heap_info );
-    //int wsCount = _clientConnection->getServer()->getWebsocketCount();    
-
-    //const char msg[] = "{\"allocated\": %lu, \"allocations\": %lu, \"ws_count\": %i, \"client_connection\": %x }";
-    //int n = snprintf(_buffer, sizeof(_buffer), msg, heap_info.current_size, heap_info.alloc_cnt, wsCount, (uint)_clientConnection);
-
-    const char msg[] = "%f,%f,%f,%f\n";
+    const char msg[] = "[%f,%f,%f,%f]";
 #if 0
     float f1, f2, f3, f4;
     f1 = rand() * 100.0f / RAND_MAX;
@@ -56,16 +49,12 @@ void WSHandler::onMessage(const char* text)
 
 void WSHandler::onMessage(const char* data, size_t size)
 {
-    //int8_t lv = data[0];
-    //int8_t rv = data[1];
-
- 
 }
 
 void WSHandler::onOpen(ClientConnection *clientConnection)
 {
     WebSocketHandler::onOpen(clientConnection);
-    clientConnection->setWSTimer(10);
+    clientConnection->setWSTimer(200);
     printf("websocket opened\r\n");
 }
  
