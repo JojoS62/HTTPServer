@@ -26,7 +26,6 @@
 	</head>
 	<body>
 <script src="/hc/code/highcharts.js"></script>
-<script src="/hc/code/modules/data.js"></script>
 
 <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
@@ -34,59 +33,71 @@
 	<label class="ld-label">
 		Enable Polling
 	</label>
-	<input type="checkbox" checked="checked" id="enablePolling"/>
-</div>
-<div class="ld-row">
-	<label class="ld-label">
-		Polling Time (Seconds)
-	</label>
-	<input class="ld-time-input" type="number" value="2" id="pollingTime"/>
-</div>
-<div class="ld-row">
-	<label class="ld-label">
-		CSV URL
-	</label>
-	<input class="ld-url-input" type="text" id="fetchURL"/>
+	<input type="checkbox" checked="checked" id="enable WS"/>
 </div>
 
 
+<script type="text/javascript">
+    var ip = location.host;
+  	var ws_Url = "ws://" + ip + "/ws/";
+    var intervalSendWatchdog;
 
-
-
-		<script type="text/javascript">
-var defaultData = 'https://demo-live-data.highcharts.com/time-data.csv';
-var urlInput = document.getElementById('fetchURL');
-var pollingCheckbox = document.getElementById('enablePolling');
-var pollingInput = document.getElementById('pollingTime');
-
-function createChart() {
-    Highcharts.chart('container', {
-        chart: {
-            type: 'spline'
-        },
-        title: {
-            text: 'Live Data'
-        },
-        data: {
-            csvURL: urlInput.value,
-            enablePolling: pollingCheckbox.checked === true,
-            dataRefreshRate: parseInt(pollingInput.value, 10)
-        }
-    });
-
-    if (pollingInput.value < 1 || !pollingInput.value) {
-        pollingInput.value = 1;
+	
+    // Send a message on the WebSocket.
+    function sendMessage(msg) {  
+		if(ws!= null)
+		{
+			ws.send(msg);
+			console.log("Alive msg sent");  
+		}
     }
-}
 
-urlInput.value = defaultData;
+    // Setup WebSocket connection and event handlers
+    function setup() {  
+        
+		ws = new WebSocket(ws_Url);
+		
+        // Listen for the connection open event then call the sendMessage function          
+        ws.onopen = function (e) {      
+            console.log("Connected");
+			intervalSendWatchdog = setInterval(function(){ sendMessage("{}"); }, 5000);
+        }
 
-// We recreate instead of using chart update to make sure the loaded CSV
-// and such is completely gone.
-pollingCheckbox.onchange = urlInput.onchange = pollingInput.onchange = createChart;
+        // Listen for the close connection event
+        ws.onclose = function (e) {      
+            console.log("OnClose recieved - WS disconnected");
+			clearInterval(intervalSendWatchdog);
+  			ws = null;
+      }
 
-// Create the chart
-createChart();
+        // Listen for connection errors
+        ws.onerror = function (e) {      
+            console.log("Error ");  // ToDo: What shall we do with a drunken error...
+        }
+
+        // Listen for new messages arriving at the client
+        ws.onmessage = function (e) {      
+	    	//var request = (e.data).split(",");
+			//val = e.data;
+			console.log(e.data);
+			val = JSON.parse(e.data);
+			console.log(val);
+			chart.series[0].setData(val, true);
+        }
+    }
+
+	var chart = Highcharts.chart('container', {
+		chart: { 
+			animation: false,
+	        type: 'column'
+		},
+		series: [{
+			data: [29.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
+		}]
+	});
+
+	// Create the chart
+	setup();
 
 		</script>
 	</body>
