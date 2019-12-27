@@ -2,8 +2,10 @@
 #define __globalVars_h__
 
 #include "mbed.h"
+#include <stdio.h>
 #include "SDIOBlockDevice.h"
 #include "FATFileSystem.h"
+
 
 #ifdef COMPONENT_SPIF
 #include "SPIFBlockDevice.h"
@@ -12,10 +14,11 @@
 extern SPIFBlockDevice spif;
 extern LittleFileSystem lfs;
 
-void formatSPIFlash();
+void formatSPIFlash(); 
 void print_SPIF_info();
 #endif
 
+void print_log(const char *format, ... );
 
 typedef struct 
 {
