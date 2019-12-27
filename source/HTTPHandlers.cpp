@@ -64,7 +64,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     HttpResponseBuilder builder(200, clientConnection);
 
     if (request->get_method() == HTTP_GET && request->get_url() == "/format") {
-        builder.set_header("Content-Type", "text/html; charset=utf-8");
+        builder.headers["Content-Type"] = "text/html; charset=utf-8";
         builder.sendHeader();
 
         string body = 
@@ -81,6 +81,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     } else if(request->get_method() == HTTP_GET && request->get_url() == "/") {
         builder.sendHeaderAndFile(&fs, "/index.html");
     } else if(request->get_method() == HTTP_GET && request->get_url() == "/test.svg") {
+        builder.headers["Content-Type"] = "image/svg+xml";
         string out;
         out.reserve(2048);
         char temp[100];
@@ -96,7 +97,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
             y = y2;
         }
         out += "</g>\n</svg>\n";
-        builder.sendHeader (200);
+        builder.sendHeader(200);
         builder.sendBodyString(out);
     } else if(request->get_method() == HTTP_GET) {
         builder.sendHeaderAndFile(&fs, request->get_url());
@@ -181,7 +182,7 @@ void request_handler_getStatus(HttpParsedRequest* request, ClientConnection* cli
 {
     mutexReqHandlerStatus.lock();
     HttpResponseBuilder builder(200, clientConnection);
-    builder.set_header("Content-Type", "application/json; charset=utf-8");
+    builder.headers["Content-Type"] = "application/json; charset=utf-8";
     builder.sendHeader();
 
     string body;
