@@ -40,6 +40,8 @@ public:
     virtual ~WSHandler() {};
 private:
     char _buffer[256];
+    int _valX;
+    Timer _timer;
 };
 
 

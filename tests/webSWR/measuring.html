@@ -75,7 +75,7 @@
 
 <div class="ld-row">
 	<label class="ld-label">
-		Enable Polling
+		this checkbox has no function yet
 	</label>
 	<input type="checkbox" checked="checked" id="enable WS"/>
 </div>
@@ -127,8 +127,8 @@
 			var val = JSON.parse(e.data);
 			console.log(val);
 			//chart.series[0].setData(val[0] / 1000.0, true);
-			var x = (new Date()).getTime(); // current time
-			var y = val[0] / 1000.0;
+			var x = val[0];
+			var y = val[1] / 1000.0;
 			console.log(y);
             chart.series[0].addPoint([x, y], true, true);
         }
@@ -163,6 +163,8 @@
 			title: {
 				text: 'Value'
 			},
+			min: 3.000,
+			max: 3.300,
 			plotLines: [{
 				value: 0,
 				width: 2,
@@ -201,7 +203,7 @@
 
 				for (i = -399; i <= 0; i += 1) {
 					data.push({
-						x: time + i * 1000,
+						x: 0,
 						y: 0
 					});
 				}

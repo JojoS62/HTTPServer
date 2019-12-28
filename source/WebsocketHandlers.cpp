@@ -27,21 +27,14 @@
 
 void WSHandler::onMessage(const char* text)
 {
-    //printf("TEXT: [%s]\r\n", text);
+    const char msg[] = "[%d, %f,%f,%f,%f]";
 
-    const char msg[] = "[%f,%f,%f,%f]";
-#if 0
-    float f1, f2, f3, f4;
-    f1 = rand() * 100.0f / RAND_MAX;
-    f2 = rand() * 100.0f / RAND_MAX;
-    f3 = rand() * 100.0f / RAND_MAX;
-    f4 = rand() * 100.0f / RAND_MAX
-#endif
-    int n = snprintf(_buffer, sizeof(_buffer), msg, globalVars.adcValues[0], 
+    _valX = _timer.read_ms();
+    int n = snprintf(_buffer, sizeof(_buffer), msg, _valX,
+                                                    globalVars.adcValues[0], 
                                                     globalVars.adcValues[1], 
                                                     globalVars.adcValues[2], 
                                                     globalVars.adcValues[3]);
-
     
     if (_clientConnection)
         _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
@@ -56,6 +49,8 @@ void WSHandler::onOpen(ClientConnection *clientConnection)
     WebSocketHandler::onOpen(clientConnection);
     clientConnection->setWSTimer(20);
     printf("%s: websocket opened\n", _clientConnection->getThreadname());
+    _valX = 0;
+    _timer.start();
 }
  
 void WSHandler::onTimer()
