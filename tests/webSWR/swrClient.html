@@ -158,12 +158,12 @@
 
 			      var val = JSON.parse(e.data);
 
-            swr_device.setAttribute('data-val', val[0] / 33.0);
-            swr_device2.setAttribute('data-val', val[1] / 33.0);
-            swr_device3.setAttribute('data-val', val[2] / 33.0);
-            swr_device4.setAttribute('data-val', val[3] / 33.0);
+            swr_device.setAttribute('data-val', val[1] / 33.0);
+            swr_device2.setAttribute('data-val', val[2] / 33.0);
+            swr_device3.setAttribute('data-val', val[3] / 33.0);
+            swr_device4.setAttribute('data-val', val[4] / 33.0);
 
-            var currentValue = (val[0] / 1000.0).toFixed(2);
+            var currentValue = (val[1] / 1000.0).toFixed(2);
 
             if(lowswr == 0 || currentValue < lowswr)
             {
