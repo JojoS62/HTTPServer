@@ -18,8 +18,6 @@ void formatSPIFlash();
 void print_SPIF_info();
 #endif
 
-void print_log(const char *format, ... );
-
 typedef struct 
 {
     float adcValues[4];

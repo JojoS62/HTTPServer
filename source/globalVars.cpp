@@ -47,17 +47,3 @@ void print_SPIF_info()
         printf("spif erase size: %llu\n",   spif.get_erase_size());
         spif.deinit();
 }
-
-Mutex mutexPrintLog;
-void print_log(const char *format, ...)
-{
-    mutexPrintLog.lock();
-
-    va_list arg;
-    va_start(arg, format);
-    vprintf(format, arg);
-    va_end(arg);
-    fflush(stdout);
-    
-    mutexPrintLog.unlock();
-}
