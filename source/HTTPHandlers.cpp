@@ -1,61 +1,6 @@
 #include "HTTPhandlers.h"
 #include "globalVars.h"
 
-#define SAMPLE_TIME     1000 // milli-sec
-#define COMPLETED_FLAG (1UL << 0)
-EventFlags threadFlag;
-
-PlatformMutex stdio_mutex;
-
-void print_stats()
-{
-    mbed_stats_socket_t stats[MBED_CONF_NSAPI_SOCKET_STATS_MAX_COUNT];
-    static int num = 0;
-    int count;
-
-    memset(stats, 0, sizeof(mbed_stats_socket_t) * MBED_CONF_NSAPI_SOCKET_STATS_MAX_COUNT);
-    printf("%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n", "Num", "ID", "State", "Proto", "Sent", "Recv", "Time");
-    //while (COMPLETED_FLAG != threadFlag.get()) {
-        count = SocketStats::mbed_stats_socket_get_each(&stats[0], MBED_CONF_NSAPI_SOCKET_STATS_MAX_COUNT);
-        for (int i = 0; i < count; i++) {
-            stdio_mutex.lock();
-            printf("\n%-15d", num);
-            printf("%-15p", stats[i].reference_id);
-
-            switch (stats[i].state) {
-                case SOCK_CLOSED:
-                    printf("%-15s", "Closed");
-                    break;
-                case SOCK_OPEN:
-                    printf("%-15s", "Open");
-                    break;
-                case SOCK_CONNECTED:
-                    printf("%-15s", "Connected");
-                    break;
-                case SOCK_LISTEN:
-                    printf("%-15s", "Listen");
-                    break;
-                default:
-                    printf("%-15s", "Error");
-                    break;
-            }
-
-            if (NSAPI_TCP == stats[i].proto) {
-                printf("%-15s", "TCP");
-            } else {
-                printf("%-15s", "UDP");
-            }
-            printf("%-15d", stats[i].sent_bytes);
-            printf("%-15d", stats[i].recv_bytes);
-            printf("%-15lld\n", stats[i].last_change_tick);
-            stdio_mutex.unlock();
-        }
-        num++;
-        //ThisThread::sleep_for(SAMPLE_TIME);
-    //}
-    // Now allow the stats thread to simply exit by itself gracefully.
-}
-
 Mutex mutexReqHandlerRoot;
 
 // Requests come in here
@@ -102,7 +47,7 @@ void request_handler(HttpParsedRequest* request, ClientConnection* clientConnect
     } else if(request->get_method() == HTTP_GET) {
         builder.sendHeaderAndFile(&fs, request->get_url());
     } else if (request->get_method() == HTTP_POST && request->get_url() == "/toggle") {
-        printf("toggle LED called\n\n");
+        debug("toggle LED called\n\n");
         //led = !led;
         builder.sendHeader();
     } else {
