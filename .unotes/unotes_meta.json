@@ -1,0 +1,19 @@
+{
+  "name": "",
+  "isOrdered": true,
+  "folders": {
+    "source": {
+      "name": "source",
+      "isOrdered": true,
+      "folders": {},
+      "files": {}
+    },
+    "tests": {
+      "name": "tests",
+      "isOrdered": true,
+      "folders": {},
+      "files": {}
+    }
+  },
+  "files": {}
+}

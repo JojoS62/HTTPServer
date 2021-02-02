@@ -22,8 +22,6 @@
 
 #include "threadIO.h"
 #include "Adafruit_ADS1015.h"
-#include "MCP23017.h"
-#include "TextLCD.h"
 #include "globalVars.h"
 
 
@@ -58,20 +56,6 @@ void ThreadIO::myThreadFn()
     Adafruit_ADS1115 ads(&i2c);
 
 
-#if 0
-    I2C i2c_lcd(PB_9,PB_8); // PC_9,PA_8 SDA, SCL 
-    //TextLCD_I2C lcd(&i2c_lcd, 0x4C, TextLCD::LCD20x4); // I2C bus, PCF8574 Slaveaddress, LCD Type Adresse: 8bit vs 7 bit!!! Arduino I2c scanner gibt 7bit an 
-
-
-    MCP23017 MCP23017(&i2c, 0x40);
-
-    for (int p = 0; p < 16; p++)
-    {
-        MCP23017.pinMode(p, DIR_OUTPUT);
-        MCP23017.digitalWrite(p, 1);
-    }
-#endif     
-
     bool testpin = false;
 
     while(_running) {
@@ -84,33 +68,6 @@ void ThreadIO::myThreadFn()
             globalVars.adcValues[i] = ads.readADC_SingleEnded_V(i) * 1000.0f; // read channel 0 [mV]
         }
         
-        //printf("reading: %7.3f %7.3f %7.3f %7.3f\r\n", reading, reading1, reading2, reading3); // print reading
-
-#if 0
-        lcd.cls();
-        lcd.locate(0, 0);
-        char converted[10];
-        sprintf(converted, "%G", reading);
-        lcd.printf(converted); 
-
-        lcd.locate(0, 1);
-        char converted1[10];
-        sprintf(converted1, "%G", reading1);
-        lcd.printf(converted1); 
-
-        lcd.locate(0, 2);
-        char converted2[10];
-        sprintf(converted2, "%G", reading2);
-        lcd.printf(converted2); 
-
-        lcd.locate(0, 3);
-        char converted3[10];
-        sprintf(converted3, "%G", reading3);
-        lcd.printf(converted3); 
-
-        printf("hello from thread %d\n", i++);
-#endif
-
         ThisThread::sleep_until(nextTime);
     }
 }

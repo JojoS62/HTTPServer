@@ -4,18 +4,23 @@
 			"path": "."
 		},
 		{
-			"path": "D:\\Projects\\Sn\\LocalGit\\test\\Mbed5-Projects\\libs"
+			"path": "D:\\Projects\\Sn\\LocalGit\\Mbed5-Projects\\mbed-os"
 		},
 		{
-			"path": "D:\\Projects\\Sn\\LocalGit\\test\\Mbed5-Projects\\mbed-os"
+			"path": "D:\\Projects\\Sn\\LocalGit\\Mbed5-Projects\\libs"
 		},
 		{
-			"path": "D:\\Projects\\Sn\\LocalGit\\test\\Mbed5-Projects\\custom_targets"
-		}
+			"path": "D:\\Projects\\Sn\\LocalGit\\Mbed5-Projects\\custom_targets"
+		},
+		{
+			"path": "D:\\Projects\\Sn\\LocalGit\\Mbed5-Projects\\components"
+		} 
 	],
 	"settings": {
 		"files.associations": {
 			"*.cpp": "cpp",
+			"*.htm": "html",
+			"*.html": "html",
 			"thread": "cpp",
 			"fonts.h": "c",
 			"array": "cpp",
@@ -28,7 +33,8 @@
 			"mstd_iterator": "cpp",
 			"*.tcc": "cpp",
 			"fstream": "cpp",
-			"xstring": "cpp"
+			"xstring": "cpp",
+			"mstd_atomic": "cpp"
 		}
 	}
 }

@@ -1,12 +1,18 @@
 {
     "target_overrides": {
         "*": {
+            "target.printf_lib": "std",
             "platform.all-stats-enabled": true,
-            "mbed-trace.enable": 0,
-            "mbed-http.http-buffer-size": 1024,
+            "mbed-trace.enable": "1",
+            "mbed-http.http-buffer-size": 1024, 
+            "stm32-emac.eth-phy-address" : 1,
+            "stm32-emac.eth-phy-media-interface" : "ETH_MEDIA_INTERFACE_MII",
+            "stm32-emac.eth-phy-AutoNegotiation" : "ETH_AUTONEGOTIATION_ENABLE",
+            "stm32-emac.eth-phy-status-register" : 16,
+            "stm32-emac.eth-phy-speed-status" : 2,
+            "stm32-emac.eth-phy-duplex-status" : 4,
+            "stm32-emac.thread-stacksize" : 1024,
 			"platform.stdio-baud-rate": 115200,
-            "nsapi.socket-stats-enabled": 1,
-            "nsapi.socket-stats-max-count": 30,
             "lwip.socket-max": 10,
             "lwip.tcp-socket-max": 10
         }

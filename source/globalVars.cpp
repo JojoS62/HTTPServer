@@ -2,22 +2,33 @@
 
 GlobalVars globalVars;
 
+/*
 SDIOBlockDevice bd;
 FATFileSystem fs("sda", &bd);
 
-SPIFBlockDevice spif(PB_5, PB_4, PB_3, PB_0);
+SPIFBlockDevice spif(FLASH_MOSI, FLASH_MISO, FLASH_CLK, FLASH_CS);
 LittleFileSystem lfs("sdb", &spif);
 
-
-void formatSPIFlash()
+void formatSPIFlash(FileSystem *fs)
 {
-    spif.init();
-    spif.erase(0, spif.get_erase_size());
-    spif.deinit();
-    
-    lfs.format(&spif);
-}
+    volatile int err;
 
+    err = spif.init();
+    debug("spif init: %d\n", err);
+    err = spif.erase(0, spif.size());
+    debug("spif erase: %d\n", err);
+//    spif.deinit();
+
+    err = fs->mount(&spif);    
+    debug("fs mount: %d\n", err);
+    if (err) {
+        err = fs->reformat(&spif);
+        debug("fs reformat: %d\n", err);
+        
+        err = fs->mount(&spif);    
+        debug("fs mount: %d\n", err);
+    }
+}
 
 void print_dir(FileSystem *fs, const char* dirname) {
     Dir dir;
@@ -47,3 +58,4 @@ void print_SPIF_info()
         printf("spif erase size: %llu\n",   spif.get_erase_size());
         spif.deinit();
 }
+*/

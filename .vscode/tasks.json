@@ -32,16 +32,16 @@
         },
         {
             "label": "compile debug",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "command": "mbed",
             "args": ["compile", "--build", "../../BUILD/${workspaceFolderBasename}/Debug", "--source", ".", "--source",  "../../mbed-os", "--source", "../../libs", "--source", "../../drivers", "--source", "../../custom_targets", "--source", "../../components", "--profile", "debug"]
         },
         {
             "label": "compile develop",
-            "group": "build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "command": "mbed",
             "args": ["compile", "--build", "../../BUILD/${workspaceFolderBasename}/Develop", "--source", ".", "--source",  "../../mbed-os", "--source", "../../libs", "--source", "../../drivers", "--source", "../../custom_targets", "--source", "../../components", "--profile", "develop"]
         },

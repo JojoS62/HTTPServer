@@ -16,5 +16,6 @@
         "*.tcc": "cpp",
         "fstream": "cpp",
         "xstring": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

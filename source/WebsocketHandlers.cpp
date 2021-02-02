@@ -27,17 +27,6 @@
 
 void WSHandler::onMessage(const char* text)
 {
-    const char msg[] = "[%d, %f,%f,%f,%f]";
-
-    _valX = _timer.read_ms();
-    int n = snprintf(_buffer, sizeof(_buffer), msg, _valX,
-                                                    globalVars.adcValues[0], 
-                                                    globalVars.adcValues[1], 
-                                                    globalVars.adcValues[2], 
-                                                    globalVars.adcValues[3]);
-    
-    if (_clientConnection)
-        _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
 }
 
 void WSHandler::onMessage(const char* data, size_t size)
@@ -47,20 +36,31 @@ void WSHandler::onMessage(const char* data, size_t size)
 void WSHandler::onOpen(ClientConnection *clientConnection)
 {
     WebSocketHandler::onOpen(clientConnection);
-    clientConnection->setWSTimer(20);
-    printf("%s: websocket opened\n", _clientConnection->getThreadname());
+    clientConnection->setWSTimer(50);
+    debug("%s: websocket opened\n", _clientConnection->getThreadname());
     _valX = 0;
     _timer.start();
 }
  
 void WSHandler::onTimer()
 {
-    onMessage("");
+    const char msg[] = "[%d,%6.3f,%6.3f,%6.3f,%6.3f]";
+
+    _valX = _timer.read_ms();
+    int n = snprintf(_buffer, sizeof(_buffer), msg, _valX,
+                                                    globalVars.adcValues[0], 
+                                                    globalVars.adcValues[1], 
+                                                    globalVars.adcValues[2], 
+                                                    globalVars.adcValues[3]
+                    );
+    
+    if (_clientConnection)
+        _clientConnection->sendFrame(WSop_text, (uint8_t*)_buffer, n);
 }
 
 void WSHandler::onClose()
 {
-    printf("%s: websocket closed\n", _clientConnection->getThreadname());
+    debug("%s: websocket closed\n", _clientConnection->getThreadname());
 }
 
 
